@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "501736917608",
+    "project_id": "mech-buddy-68ad7",
+    "storage_bucket": "mech-buddy-68ad7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:501736917608:android:62d9f373f141bb868589dd",
+        "android_client_info": {
+          "package_name": "com.maitrim.mech_buddy"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2ROSEhb-vg3JWtw1iDwho1G2AraAbCqc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
