@@ -266,7 +266,7 @@ useEffect(()=>{
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="App" component={App} />
         <Stack.Screen name="RegisterUser" component={RegisterUser} />
-        <Stack.Screen name="InputData"  component={DisplayData} />
+        {/* <Stack.Screen name="InputData"  component={DisplayData} /> */}
 
         <Stack.Screen name="LoginUser" component={LoginUser} />
           <Stack.Screen name="InputPage" component={InputPage}/> 

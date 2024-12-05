@@ -1,41 +1,88 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Alert, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
-import navigation from './Naviagtion';
 import { useNavigation } from '@react-navigation/native';
 
 const InputPage = () => {
-  const [selectedCategory, setSelectedCategory] = useState(''); // Two Wheeler or Four Wheeler
-  const [type] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [company, setCompany] = useState('');
-  const [model, setModel] = useState('');
-  const [variant, setVariant] = useState('');
-const navigation = useNavigation();
+  const [companies, setCompanies] = useState([]);
+  const [models, setModels] = useState([]);
+  const [loadingCompanies, setLoadingCompanies] = useState(false);
+  const [loadingModels, setLoadingModels] = useState(false);
+
+  const navigation = useNavigation();
+
+  // Fetch companies based on selected category
+  const fetchCompanies = async (category) => {
+    setLoadingCompanies(true);
+    try {
+      const apiEndpoint =
+        category === 'two'
+          ? 'https://mechbuddy.pythonanywhere.com/api/company/oem/vehicle/bike'
+          : 'https://mechbuddy.pythonanywhere.com/api/company/oem/vehicle/car';
+
+      const response = await fetch(apiEndpoint);
+      const data = await response.json();
+      setCompanies(data);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load companies.');
+      console.error(error);
+    } finally {
+      setLoadingCompanies(false);
+    }
+  };
+
+  // Fetch models based on selected company and category
+  const fetchModels = async (companyId) => {
+    if (!companyId || !selectedCategory) return;
+    setLoadingModels(true);
+    try {
+      const apiEndpoint = `https://mechbuddy.pythonanywhere.com/api/vehicle/${companyId}/${selectedCategory === 'two' ? 'bike' : 'car'}/all`;
+      const response = await fetch(apiEndpoint);
+      const data = await response.json();
+      setModels(data);
+    } catch (error) {
+      Alert.alert('Error', 'Failed to load models.');
+      console.error(error);
+    } finally {
+      setLoadingModels(false);
+    }
+  };
+
+  // Handle category selection and fetch relevant companies
+  const handleCategorySelect = (category) => {
+    setSelectedCategory(category);
+    setCompany(''); // Reset company and models when category changes
+    setModels([]);
+    fetchCompanies(category);
+  };
+
+  // Handle company selection and fetch relevant models
+  const handleCompanySelect = (companyId) => {
+    setCompany(companyId);
+    fetchModels(companyId);
+  };
+
   const handleSubmit = () => {
-    if (!selectedCategory ||  !company || !model || !variant) {
+    if (!selectedCategory || !company) {
       Alert.alert('Error', 'Please select all options.');
       return;
     }
 
     const inputData = {
       category: selectedCategory,
-       
       company,
-      model,
-      variant,
     };
 
-  
-    navigation.navigate('InputData', { data: inputData });
+    // Navigate or handle data submission
+    navigation.navigate('NextScreen', { data: inputData });
   };
 
   return (
     <View style={styles.container}>
-     
       <Text style={styles.title}>Vehicle Details</Text>
-  {/* <View style={{height:10,width:10}}>
-        <Image source={require("../assets/icons/logo.png")}></Image>
-      </View> */}
+
       {/* Category Selection */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Select Category:</Text>
@@ -45,7 +92,7 @@ const navigation = useNavigation();
               styles.categoryOption,
               selectedCategory === 'two' && styles.categoryOptionSelected,
             ]}
-            onPress={() => setSelectedCategory('two')}
+            onPress={() => handleCategorySelect('two')}
           >
             <Image
               source={require('../assets/icons/motorbike.png')}
@@ -58,7 +105,7 @@ const navigation = useNavigation();
               styles.categoryOption,
               selectedCategory === 'four' && styles.categoryOptionSelected,
             ]}
-            onPress={() => setSelectedCategory('four')}
+            onPress={() => handleCategorySelect('four')}
           >
             <Image
               source={require('../assets/icons/car.png')}
@@ -73,53 +120,41 @@ const navigation = useNavigation();
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Select Company:</Text>
         <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={company}
-            onValueChange={(itemValue) => setCompany(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Company" value="" />
-            <Picker.Item label="Honda" value="honda" />
-            <Picker.Item label="Toyota" value="toyota" />
-            <Picker.Item label="Yamaha" value="yamaha" />
-            <Picker.Item label="Suzuki" value="suzuki" />
-          </Picker>
+          {loadingCompanies ? (
+            <ActivityIndicator size="large" color="#007bff" />
+          ) : (
+            <Picker
+              selectedValue={company}
+              onValueChange={(itemValue) => handleCompanySelect(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Company" value=" Enter the companies " />
+              {companies.map((item) => (
+                <Picker.Item key={item.id} label={item.name} value={item.id} />
+              ))}
+            </Picker>
+          )}
         </View>
       </View>
 
-      {/* Model Selection */}
+      {/* Models Selection */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Select Model:</Text>
         <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={model}
-            onValueChange={(itemValue) => setModel(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Model" value="" />
-            <Picker.Item label="Civic" value="civic" />
-            <Picker.Item label="Activa" value="activa" />
-            <Picker.Item label="RAV4" value="rav4" />
-            <Picker.Item label="Gixxer" value="gixxer" />
-          </Picker>
-        </View>
-      </View>
-
-      {/* Variant Selection */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Select Variant:</Text>
-        <View style={styles.pickerContainer}>
-          <Picker
-            selectedValue={variant}
-            onValueChange={(itemValue) => setVariant(itemValue)}
-            style={styles.picker}
-          >
-            <Picker.Item label="Select Variant" value="" />
-            <Picker.Item label="Deluxe" value="deluxe" />
-            <Picker.Item label="Sport" value="sport" />
-            <Picker.Item label="Standard" value="standard" />
-            <Picker.Item label="Premium" value="premium" />
-          </Picker>
+          {loadingModels ? (
+            <ActivityIndicator size="large" color="#007bff" />
+          ) : (
+            <Picker
+              selectedValue={company}
+              onValueChange={(itemValue) => setCompany(itemValue)}
+              style={styles.picker}
+            >
+              <Picker.Item label="Select Model" value="" />
+              {models.map((item) => (
+                <Picker.Item key={item.id} label={item.name} value={item.name} />
+              ))}
+            </Picker>
+          )}
         </View>
       </View>
 
@@ -173,7 +208,7 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginBottom: 5,
-    borderRadius:4,
+    borderRadius: 4,
   },
   categoryText: {
     fontSize: 14,

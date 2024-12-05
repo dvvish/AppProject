@@ -123,7 +123,7 @@ const VendorDetails: React.FC = ({ route }: any) => {
           <Text style={styles.specificationLabel}>Location: </Text>Adhartal, Jabalpur
         </Text>
         <Text style={styles.specificationText}>
-          <Text style={styles.specificationLabel}>Contact: </Text>+91 9876543210
+          <Text style={styles.specificationLabel}>Contact number: </Text>+91 9876543210
         </Text>
       </View>
 

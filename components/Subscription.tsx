@@ -59,7 +59,7 @@ const Subscription: React.FC = () => {
     if (isLoggedIn) {
       // If the user is logged in, navigate to the subscription details page
       console.log(`Subscribed to plan: ${planId}`);
-      navigation.navigate('InputPage',);
+      navigation.navigate('InputPage');
     } else {
       // If not logged in, navigate to the LoginUser page
       navigation.navigate("LoginUser");
