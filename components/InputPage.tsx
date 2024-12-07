@@ -1,27 +1,42 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity, Image, ActivityIndicator } from 'react-native';
-import { Picker } from '@react-native-picker/picker';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Modal,
+  FlatList,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import Data from './Data';
 
 const InputPage = () => {
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [company, setCompany] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<{ id: string; name: string } | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
+  const [selectedFuelType, setSelectedFuelType] = useState<string | null>(null);
+
   const [companies, setCompanies] = useState([]);
   const [models, setModels] = useState([]);
-  const [loadingCompanies, setLoadingCompanies] = useState(false);
-  const [loadingModels, setLoadingModels] = useState(false);
+  const [fuelTypes, setFuelTypes] = useState<string[]>([]);
+
+  const [loading, setLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [currentField, setCurrentField] = useState<string | null>(null);
 
   const navigation = useNavigation();
 
   // Fetch companies based on selected category
-  const fetchCompanies = async (category) => {
-    setLoadingCompanies(true);
+  const fetchCompanies = async (category: string) => {
+    setLoading(true);
     try {
       const apiEndpoint =
         category === 'two'
           ? 'https://mechbuddy.pythonanywhere.com/api/company/oem/vehicle/bike'
           : 'https://mechbuddy.pythonanywhere.com/api/company/oem/vehicle/car';
-
       const response = await fetch(apiEndpoint);
       const data = await response.json();
       setCompanies(data);
@@ -29,214 +44,221 @@ const InputPage = () => {
       Alert.alert('Error', 'Failed to load companies.');
       console.error(error);
     } finally {
-      setLoadingCompanies(false);
+      setLoading(false);
     }
   };
 
   // Fetch models based on selected company and category
-  const fetchModels = async (companyId) => {
+  const fetchModels = async (companyId: string) => {
     if (!companyId || !selectedCategory) return;
-    setLoadingModels(true);
+    setLoading(true);
     try {
       const apiEndpoint = `https://mechbuddy.pythonanywhere.com/api/vehicle/${companyId}/${selectedCategory === 'two' ? 'bike' : 'car'}/all`;
       const response = await fetch(apiEndpoint);
       const data = await response.json();
       setModels(data);
+      const fuelTypes = Array.from(new Set(data.map((item: any) => item.fuel_name)));
+      setFuelTypes(fuelTypes);
     } catch (error) {
       Alert.alert('Error', 'Failed to load models.');
       console.error(error);
     } finally {
-      setLoadingModels(false);
+      setLoading(false);
     }
   };
 
-  // Handle category selection and fetch relevant companies
-  const handleCategorySelect = (category) => {
+  const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
-    setCompany(''); // Reset company and models when category changes
+    setSelectedCompany(null);
+    setSelectedModel(null);
+    setSelectedFuelType(null);
+    setCompanies([]);
     setModels([]);
+    setFuelTypes([]);
     fetchCompanies(category);
   };
 
-  // Handle company selection and fetch relevant models
-  const handleCompanySelect = (companyId) => {
-    setCompany(companyId);
-    fetchModels(companyId);
+  const handleCompanySelect = (company: { id: string; name: string }) => {
+    setSelectedCompany(company); // Store both id and name
+    setSelectedModel(null);
+    setSelectedFuelType(null);
+    fetchModels(company.id); // Pass the id to fetch models
   };
 
-  const handleSubmit = () => {
-    if (!selectedCategory || !company) {
-      Alert.alert('Error', 'Please select all options.');
+  const handleModalOpen = (field: string) => {
+    setCurrentField(field);
+    setModalVisible(true);
+  };
+
+  const handleModalClose = () => {
+    setModalVisible(false);
+    setCurrentField(null);
+  };
+
+  const handleItemSelect = (item: any) => {
+    if (currentField === 'category') {
+      handleCategorySelect(item.id);
+    } else if (currentField === 'company') {
+      handleCompanySelect({ id: item.id, name: item.name }); // Pass both id and name
+    } else if (currentField === 'model') {
+      setSelectedModel(item.name);
+    } else if (currentField === 'fuelType') {
+      setSelectedFuelType(item.name);
+    }
+    handleModalClose();
+  };
+
+  const renderModalContent = () => {
+    let data = [];
+    if (currentField === 'category') {
+      data = [
+        { id: 'two', name: 'Two Wheeler' },
+        { id: 'four', name: 'Four Wheeler' },
+      ];
+    } else if (currentField === 'company') {
+      data = companies.map((item: any) => ({ id: item.id, name: item.name })); // Keep id and name
+    } else if (currentField === 'model') {
+      data = models.map((item: any) => ({ id: item.id, name: item.name }));
+    } else if (currentField === 'fuelType') {
+      data = fuelTypes.map((fuel) => ({ id: fuel, name: fuel })); // Treat fuel types as strings
+    }
+
+    return (
+      <FlatList
+        data={data}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.modalItem}
+            onPress={() => handleItemSelect(item)}
+          >
+            <Text style={styles.modalItemText}>{item.name}</Text>
+          </TouchableOpacity>
+        )}
+      />
+    );
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedCategory || !selectedCompany || !selectedModel || !selectedFuelType) {
+      Alert.alert('Error', 'Please fill all fields.');
       return;
     }
 
     const inputData = {
       category: selectedCategory,
-      company,
+      companyId: selectedCompany.id, // Pass the company ID
+      companyName: selectedCompany.name, // Optional, if needed
+      model: selectedModel,
+      fuelType: selectedFuelType,
     };
+    try {
+      // Retrieve existing data
+      const existingData = await AsyncStorage.getItem('vehicleData');
+      const parsedData = existingData ? JSON.parse(existingData) : [];
+  
+      // Append new data
+      const updatedData = [...parsedData, inputData];
+      await AsyncStorage.setItem('vehicleData', JSON.stringify(updatedData));
+      // const storedData = await AsyncStorage.getItem('vehicleData');
+      // if(storedData){
+      //   console.log(storedData);
+      //   navigation.navigate('Data');
+      // }
+      // Navigate to the Data page
+      navigation.navigate(Data, { inputData });
+    } catch (error) {
+      console.error('Error saving data', error);
+    }
 
-    // Navigate or handle data submission
-    navigation.navigate('NextScreen', { data: inputData });
+    
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Vehicle Details</Text>
 
-      {/* Category Selection */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Select Category:</Text>
-        <View style={styles.categoryContainer}>
-          <TouchableOpacity
-            style={[
-              styles.categoryOption,
-              selectedCategory === 'two' && styles.categoryOptionSelected,
-            ]}
-            onPress={() => handleCategorySelect('two')}
-          >
-            <Image
-              source={require('../assets/icons/motorbike.png')}
-              style={styles.categoryIcon}
-            />
-            <Text style={styles.categoryText}>Two Wheeler</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.categoryOption,
-              selectedCategory === 'four' && styles.categoryOptionSelected,
-            ]}
-            onPress={() => handleCategorySelect('four')}
-          >
-            <Image
-              source={require('../assets/icons/car.png')}
-              style={styles.categoryIcon}
-            />
-            <Text style={styles.categoryText}>Four Wheeler</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      <TouchableOpacity
+        style={styles.fieldContainer}
+        onPress={() => handleModalOpen('category')}
+      >
+        
+        <Text style={styles.fieldText}>
+          {selectedCategory
+            ? `Category: ${selectedCategory === 'two' ? 'Two Wheeler' : 'Four Wheeler'}`
+            : 'Select Category'}
+        </Text>
+      </TouchableOpacity>
 
-      {/* Company Selection */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Select Company:</Text>
-        <View style={styles.pickerContainer}>
-          {loadingCompanies ? (
-            <ActivityIndicator size="large" color="#007bff" />
-          ) : (
-            <Picker
-              selectedValue={company}
-              onValueChange={(itemValue) => handleCompanySelect(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select Company" value=" Enter the companies " />
-              {companies.map((item) => (
-                <Picker.Item key={item.id} label={item.name} value={item.id} />
-              ))}
-            </Picker>
-          )}
-        </View>
-      </View>
+      <TouchableOpacity
+        style={styles.fieldContainer}
+        onPress={() => handleModalOpen('company')}
+        disabled={!selectedCategory}
+      >
+        <Text style={styles.fieldText}>
+          {selectedCompany ? selectedCompany.name : 'Select Company'}
+        </Text>
+      </TouchableOpacity>
 
-      {/* Models Selection */}
-      <View style={styles.inputContainer}>
-        <Text style={styles.label}>Select Model:</Text>
-        <View style={styles.pickerContainer}>
-          {loadingModels ? (
-            <ActivityIndicator size="large" color="#007bff" />
-          ) : (
-            <Picker
-              selectedValue={company}
-              onValueChange={(itemValue) => setCompany(itemValue)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select Model" value="" />
-              {models.map((item) => (
-                <Picker.Item key={item.id} label={item.name} value={item.name} />
-              ))}
-            </Picker>
-          )}
-        </View>
-      </View>
+      <TouchableOpacity
+        style={styles.fieldContainer}
+        onPress={() => handleModalOpen('model')}
+        disabled={!selectedCompany}
+      >
+        <Text style={styles.fieldText}>
+          {selectedModel || 'Select Model'}
+        </Text>
+      </TouchableOpacity>
 
-      {/* Submit Button */}
+      <TouchableOpacity
+        style={styles.fieldContainer}
+        onPress={() => handleModalOpen('fuelType')}
+        disabled={!selectedModel}
+      >
+        <Text style={styles.fieldText}>
+          {selectedFuelType || 'Select Fuel Type'}
+        </Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitButtonText}>Submit</Text>
       </TouchableOpacity>
+
+      <Modal visible={modalVisible} animationType="slide" onRequestClose={handleModalClose}>
+        <View style={styles.modalContainer}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#007bff" />
+          ) : (
+            renderModalContent()
+          )}
+        </View>
+      </Modal>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f4f4f4',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-    color: '#333',
-  },
-  inputContainer: {
-    marginBottom: 20,
-  },
-  label: {
-    fontSize: 16,
-    marginBottom: 8,
-    color: '#555',
-  },
-  categoryContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 10,
-  },
-  categoryOption: {
-    alignItems: 'center',
-    padding: 10,
+  container: { flex: 1, padding: 20, backgroundColor: '#f4f4f4' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 20, textAlign: 'center' },
+  fieldContainer: {
+    padding: 15,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
-    width: 120,
-  },
-  categoryOptionSelected: {
-    borderColor: '#007bff',
-    backgroundColor: '#e6f0ff',
-  },
-  categoryIcon: {
-    width: 30,
-    height: 30,
-    marginBottom: 5,
-    borderRadius: 4,
-  },
-  categoryText: {
-    fontSize: 14,
-    color: '#555',
-  },
-  pickerContainer: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
+    marginBottom: 15,
     backgroundColor: '#fff',
-    overflow: 'hidden',
   },
-  picker: {
-    height: 50,
-    width: '100%',
-  },
+  fieldText: { fontSize: 16, color: '#555' },
   submitButton: {
-    backgroundColor: '#ff3131',
+    backgroundColor: '#007bff',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 20,
   },
-  submitButtonText: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: '600',
-  },
+  submitButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  modalContainer: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  modalItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#ccc' },
+  modalItemText: { fontSize: 16 },
 });
 
 export default InputPage;

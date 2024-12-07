@@ -3,7 +3,6 @@ import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, ActivityInd
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { icons } from '../constants';
-import RegisterUser from './RegisterUser';
 
 const LoginUser = () => {
   const [username, setUsername] = useState('');
@@ -12,13 +11,12 @@ const LoginUser = () => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
-  const saveTokens = async (accessToken: string, refreshToken: string) => {
+  const saveToken = async (token: string) => {
     try {
-      await AsyncStorage.setItem('accessToken', accessToken);
-      await AsyncStorage.setItem('refreshToken', refreshToken);
-      console.log('Tokens saved successfully');
+      await AsyncStorage.setItem('Token', token);
+      console.log('Token saved successfully');
     } catch (error) {
-      console.error('Failed to save tokens:', error);
+      console.error('Failed to save token:', error);
     }
   };
 
@@ -30,7 +28,7 @@ const LoginUser = () => {
 
     setError(null);
     setLoading(true);
-
+ 
     try {
       const userData = { username, password };
 
@@ -47,20 +45,19 @@ const LoginUser = () => {
         throw new Error(errorData.message || 'Invalid username or password.');
       }
 
-      const result = await response.json();
-      const { access, refresh, message } = result;
+      const { token } = await response.json();
 
-      if (!access || !refresh) {
-        throw new Error('Tokens not received from the server.');
+      if (!token) {
+        throw new Error('Token not received from the server.');
       }
 
-      // Save tokens to AsyncStorage
-      await saveTokens(access, refresh);
+      // Save the token to AsyncStorage
+      await saveToken(token);
 
-      Alert.alert('Success', message || 'Login successful!');
+      Alert.alert('Success', 'Login successful!');
 
       // Navigate to the home screen or main app screen
-      navigation.navigate('Home');
+     // navigation.navigate('Home');
     } catch (err) {
       console.error('Error during login:', err);
       setError((err as Error).message || 'An unknown error occurred.');
@@ -98,7 +95,10 @@ const LoginUser = () => {
       )}
       <Text style={styles.registerText}>
         New user?{' '}
-        <Text style={styles.loginLink} onPress={() => navigation.navigate(RegisterUser)}>
+        <Text
+          style={styles.loginLink}
+          onPress={() => navigation.navigate('RegisterUser')}
+        >
           Register here
         </Text>
       </Text>
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 28,
-    fontFamily: 'JakartaBold',
     color: '#ff3131',
     textAlign: 'center',
     marginBottom: 20,
@@ -149,14 +148,12 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontSize: 18,
-    fontFamily: 'JakartaBold',
   },
   registerText: {
     textAlign: 'center',
     marginTop: 20,
     color: '#666',
     fontSize: 14,
-    fontFamily: 'JakartaLight',
   },
   loginLink: {
     color: '#ff3131',

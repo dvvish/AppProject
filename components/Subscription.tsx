@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, FlatList, Image, StyleSheet, ActivityIndi
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import Data from "./Data";
 
 const subscriptionPlans = [
   {
@@ -40,26 +41,35 @@ const subscriptionPlans = [
   }
 ];
 
-const Subscription: React.FC = () => {
+const Subscription: React.FC = async () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const navigation = useNavigation();
 
   useEffect(() => {
     const checkLoginStatus = async () => {
-      const accessToken = await AsyncStorage.getItem('accessToken'); // Check if access token exists
-      setIsLoggedIn(!!accessToken); // If access token exists, the user is logged in
+      //const accessToken = await AsyncStorage.getItem('accessToken');
+       // Check if access token exists
+       const token = await AsyncStorage.getItem('Token')
+      setIsLoggedIn(!!token); // If access token exists, the user is logged in
       setLoading(false); // Set loading to false after checking the token
     };
 
     checkLoginStatus();
   }, []);
+  const data = await AsyncStorage.getItem('vehicleData');
 
   const handleSubscribe = (planId: number) => {
     if (isLoggedIn) {
       // If the user is logged in, navigate to the subscription details page
       console.log(`Subscribed to plan: ${planId}`);
-      navigation.navigate('InputPage');
+      console.log(data);
+      if(data){
+        navigation.navigate('Data');
+      }
+      //else navigate to inputpage//
+      else{
+      navigation.navigate('InputPage');}
     } else {
       // If not logged in, navigate to the LoginUser page
       navigation.navigate("LoginUser");

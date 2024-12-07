@@ -10,6 +10,7 @@ import {
   SafeAreaView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface Service {
   id: string;
@@ -24,7 +25,7 @@ const localIconMapping: Record<string, any> = {
   'parts': require('../assets/icons/s6.png'),
 };
 
-const service = () => {
+const service = async () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
@@ -52,16 +53,22 @@ const service = () => {
 
     fetchData();
   }, []);
-   
-
-  
+   // get vehicleData
+   const data = await AsyncStorage.getItem('vehicleData');
+   // if vehicle data is present navigate to services else first fill data //
   const handlePress=(service:Service) =>{
+    //if vehicle data is available navigate to there respective page//
+    if(data){
     if(service.name=="Parts"){
       navigation.navigate("Parts")
     }
     else{
     navigation.navigate('Servicing');
   }
+}
+else{
+  navigation.navigate("InputPage");
+}
 }
 
   return (

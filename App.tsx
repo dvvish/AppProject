@@ -40,6 +40,7 @@ import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry';
 import VendorDetails1 from './components/VendorDetails1';
 import InputPage from './components/InputPage';
 import DisplayData from './components/Displaydata';
+import Data from './components/Data';
 //import { icons } from './constants';
 const Stack = createNativeStackNavigator();
 
@@ -271,7 +272,7 @@ useEffect(()=>{
         <Stack.Screen name="LoginUser" component={LoginUser} />
           <Stack.Screen name="InputPage" component={InputPage}/> 
         <Stack.Screen name="VendorDetails1" component={VendorDetails1} />
-
+          <Stack.Screen name = "Data" component={Data}/>
 
         {/* <Stack.Screen name='VendorDetail' component={VendorDetail}/> */}
 
