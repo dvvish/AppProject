@@ -4,7 +4,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Data from "./Data";
-
+ 
 const subscriptionPlans = [
   {
     id: 1,
@@ -65,7 +65,7 @@ const Subscription: React.FC = async () => {
       console.log(`Subscribed to plan: ${planId}`);
       console.log(data);
       if(data){
-        navigation.navigate('Data');
+        navigation.navigate('payment');
       }
       //else navigate to inputpage//
       else{

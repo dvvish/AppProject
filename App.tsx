@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {
@@ -41,7 +41,13 @@ import VendorDetails1 from './components/VendorDetails1';
 import InputPage from './components/InputPage';
 import DisplayData from './components/Displaydata';
 import Data from './components/Data';
+import Payment from './components/payment';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 //import { icons } from './constants';
+
+ 
+
+
 const Stack = createNativeStackNavigator();
 
 // Sample data for FlatList
@@ -66,7 +72,7 @@ const Stack = createNativeStackNavigator();
 
 function App(): React.JSX.Element {
 
-
+ 
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
     const enabled =
@@ -88,6 +94,8 @@ useEffect(()=>{
   requestUserPermission() ;
   getToken();
 }
+
+
 
 )
   return (
@@ -119,6 +127,7 @@ useEffect(()=>{
                   {/* wheel icons  */}
                    
                    <TouchableOpacity
+               
                     onPress={() => navigation.navigate(InputPage)}
                     style={{
                       position: "absolute",
@@ -187,6 +196,14 @@ useEffect(()=>{
                 <View style={{ padding: 20 }}>
                   <Carousel />
                 </View>
+
+
+                {/*Image*/ }
+                <View >
+                  <TouchableOpacity onPress={()=>navigation.navigate(RegisterUser)}> 
+                  <Image  style={{height:40,width:40}} source={{ uri:"https://cdn-icons-png.flaticon.com/128/18260/18260165.png"}}/>
+                  </TouchableOpacity>
+                </View>
                 {/* <View style={styles.divider}></View> */}
                 {/* Buttons Section */}
                 <View>
@@ -213,6 +230,7 @@ useEffect(()=>{
                 <View>
                   <SliderReel></SliderReel>
                 </View>
+                
                 {/* FlatList for User Profiles */}
                 {/* <View style={styles.divider}></View> */}
                 <View style={styles.userListSection}>
@@ -266,14 +284,14 @@ useEffect(()=>{
         <Stack.Screen name="IntroScreen" component={IntroScreen} />
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="App" component={App} />
-        <Stack.Screen name="RegisterUser" component={RegisterUser} />
+        <Stack.Screen name="RegisterUser" component={RegisterUser} options={{headerShown:false}}/>
         {/* <Stack.Screen name="InputData"  component={DisplayData} /> */}
 
         <Stack.Screen name="LoginUser" component={LoginUser} />
           <Stack.Screen name="InputPage" component={InputPage}/> 
         <Stack.Screen name="VendorDetails1" component={VendorDetails1} />
           <Stack.Screen name = "Data" component={Data}/>
-
+    <Stack.Screen name= "payment" component={Payment} options={{headerShown:false}}/>
         {/* <Stack.Screen name='VendorDetail' component={VendorDetail}/> */}
 
 

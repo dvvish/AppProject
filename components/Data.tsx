@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import VendorList from './VendorList';
 
-const  Data = () => {
+const Data = () => {
   const [dataList, setDataList] = useState([]);
   const navigation = useNavigation();
 
@@ -23,6 +22,10 @@ const  Data = () => {
     fetchData();
   }, []);
 
+  const addVehicle = () => {
+    navigation.navigate('InputPage');
+  };
+
   const clearData = async () => {
     try {
       await AsyncStorage.removeItem('vehicleData');
@@ -32,9 +35,17 @@ const  Data = () => {
     }
   };
 
-  const handleItemPress = () => {
-    // Navigate to the VendorList page and pass item data as a parameter
-    //not yet done
+  const handleItemPress = async (item: never) => {
+    try {
+      // Store selected data in AsyncStorage
+      await AsyncStorage.setItem('selectedCategory', item.category);
+      await AsyncStorage.setItem('selectedVehicle', JSON.stringify(item));
+      // Navigate to the VendorList page
+    //  navigation.navigate('VendorList', { selectedData: item });
+    navigation.navigate('Home');
+    } catch (error) {
+      console.error('Error storing selected data', error);
+    }
   };
 
   return (
@@ -45,7 +56,7 @@ const  Data = () => {
           data={dataList}
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
-            <TouchableOpacity onPress={() => handleItemPress}>
+            <TouchableOpacity onPress={() => handleItemPress(item)}>
               <View style={styles.item}>
                 <Text>Category: {item.category}</Text>
                 <Text>Company: {item.companyName}</Text>
@@ -58,8 +69,11 @@ const  Data = () => {
       ) : (
         <Text style={styles.noData}>No data available.</Text>
       )}
-      <TouchableOpacity style={styles.clearButton} onPress={clearData}>
-        <Text style={styles.clearButtonText}>Clear Data</Text>
+      <TouchableOpacity style={styles.button} onPress={clearData}>
+        <Text style={styles.buttonText}>Clear Data</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={addVehicle}>
+        <Text style={styles.buttonText}>Add More Vehicle</Text>
       </TouchableOpacity>
     </View>
   );
@@ -77,14 +91,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   noData: { textAlign: 'center', fontSize: 18, color: '#555' },
-  clearButton: {
+  button: {
     marginTop: 20,
-    backgroundColor: '#d9534f',
+    backgroundColor: '#ff3131',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
-  clearButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
 });
 
-export default  Data;
+export default Data;

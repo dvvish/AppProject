@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 import { icons } from '../constants';
 
-const LoginUser = () => {
+const LoginUser = async () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -19,7 +19,7 @@ const LoginUser = () => {
       console.error('Failed to save token:', error);
     }
   };
-
+const data = await AsyncStorage.getItem('vehicleData');
   const handleLogin = async () => {
     if (!username || !password) {
       setError('Please fill in all fields.');
@@ -55,7 +55,12 @@ const LoginUser = () => {
       await saveToken(token);
 
       Alert.alert('Success', 'Login successful!');
-
+if(data){
+  navigation.navigate("payment");
+}
+else{
+  navigation.navigate("InputPage");
+}
       // Navigate to the home screen or main app screen
      // navigation.navigate('Home');
     } catch (err) {

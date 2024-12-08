@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   },
   fieldText: { fontSize: 16, color: '#555' },
   submitButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#ff3131',
     paddingVertical: 15,
     borderRadius: 8,
     alignItems: 'center',

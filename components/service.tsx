@@ -54,9 +54,10 @@ const service = async () => {
     fetchData();
   }, []);
    // get vehicleData
-   const data = await AsyncStorage.getItem('vehicleData');
+   
    // if vehicle data is present navigate to services else first fill data //
-  const handlePress=(service:Service) =>{
+  const handlePress=async (service:Service) =>{
+    const data = await AsyncStorage.getItem('vehicleData');
     //if vehicle data is available navigate to there respective page//
     if(data){
     if(service.name=="Parts"){
@@ -135,17 +136,17 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   card: {
-    width: 160,
-    height:170,
+    width: 148,
+    height:160,
     marginRight: 20,
     padding: 15,
     backgroundColor: '#fff',
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#f7f5f0',
     // shadowColor: '#000',
-    // shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+     shadowOffset: { width: 0, height: 1 },
+   // shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 3,
     alignItems: 'center',

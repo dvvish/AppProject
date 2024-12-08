@@ -5,6 +5,7 @@ import { icons } from '../constants/index'; // Adjust path as necessary
 
 import App from '../App';
 import Servicing from '../components/servicing';
+import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
 
 const RegisterUser = () => {
   const [username, setUsername] = useState('');
@@ -48,7 +49,7 @@ const RegisterUser = () => {
 
       // Log confirmation message to console on success
       console.log('Registration successful:', userData);
-       navigation.navigate('Servicing');
+       navigation.navigate('Home');
      // navigation.goBack();
       // Navigate to the home page
      } catch (err) {
@@ -59,6 +60,7 @@ const RegisterUser = () => {
   };
 
   return (
+    
     <View style={styles.container}>
       <Image source={icons.logo} style={{ width: 200, height: 200, alignSelf: 'center' }} />
       <Text style={styles.title}>Register</Text>
@@ -117,6 +119,7 @@ const RegisterUser = () => {
         </Text>
       </Text>
     </View>
+    
   );
 };
 
