@@ -1,13 +1,19 @@
 import React, { useState } from 'react';
 import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { icons } from '../constants/index'; // Adjust path as necessary
 
 import App from '../App';
 import Servicing from '../components/servicing';
-import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
+import { ScrollView} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const RegisterUser = () => {
+
+  // type RegisterParams = {
+  //   username: string;
+  //   email: string;
+  // };
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [firstName, setFirstName] = useState('');
@@ -16,8 +22,12 @@ const RegisterUser = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const navigation = useNavigation();
+  // const route = useRoute<RouteProp<{ params: RegisterParams }, 'params'>>();
 
   const handleRegister = async () => {
+    await AsyncStorage.setItem('username', username);
+await AsyncStorage.setItem('email', email);
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -49,7 +59,11 @@ const RegisterUser = () => {
 
       // Log confirmation message to console on success
       console.log('Registration successful:', userData);
-       navigation.navigate('Home');
+        navigation.navigate('Home');
+     // navigation.navigate('Register', { username, email });
+      //to save username and email
+      await AsyncStorage.setItem('username', 'email');
+       
      // navigation.goBack();
       // Navigate to the home page
      } catch (err) {
@@ -60,7 +74,7 @@ const RegisterUser = () => {
   };
 
   return (
-    
+    <ScrollView> 
     <View style={styles.container}>
       <Image source={icons.logo} style={{ width: 200, height: 200, alignSelf: 'center' }} />
       <Text style={styles.title}>Register</Text>
@@ -119,6 +133,7 @@ const RegisterUser = () => {
         </Text>
       </Text>
     </View>
+    </ScrollView>
     
   );
 };
