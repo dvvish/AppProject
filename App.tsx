@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   Image,
   FlatList,
+  Button,
 } from 'react-native';
 import { RootStackParamList } from './types';
 import ComingSoon from './components/comingsoon';
@@ -45,6 +46,7 @@ import Payment from './components/payment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Registercomp from './components/Registercomp';
 import ImageComponent from './components/ImageComponent';
+import Pay from './components/Pay';
 //import { icons } from './constants';
 
  
@@ -73,33 +75,46 @@ const Stack = createNativeStackNavigator();
 // for getting integration of firebase config//
 
 function App(): React.JSX.Element {
+  const [isDataSubmitted, setIsDataSubmitted] = useState(false);
 
- 
+  // Fetch saved data from AsyncStorage
+  useEffect(() => {
+    const checkData = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        setIsDataSubmitted(!!userData); // Set true if userData exists
+      } catch (err) {
+        console.error('Error fetching data from AsyncStorage:', err);
+      }
+    };
+
+    checkData();
+  }, []);
+
+  // Permissions and token fetching logic
   async function requestUserPermission() {
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-  
+
     if (enabled) {
       console.log('Authorization status:', authStatus);
-    }
-    else{
-      console.log("FAIL");
+    } else {
+      console.log('FAIL');
     }
   }
-  const getToken = async()=>{
-    const token= await messaging().getToken()
-    console.log("Token = ",token)
-  }
-useEffect(()=>{
-  requestUserPermission() ;
-  getToken();
-}
 
+  const getToken = async () => {
+    const token = await messaging().getToken();
+    console.log('Token = ', token);
+  };
 
+  useEffect(() => {
+    requestUserPermission();
+    getToken();
+  }, []);
 
-)
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
@@ -108,88 +123,60 @@ useEffect(()=>{
             <SafeAreaView style={styles.container}>
               <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
               <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
-                {/* Image Slider at the top */}
-                <View style={{ flexDirection: "row", justifyContent: "flex-start", padding: 0 }}>
+                {/* Top Section */}
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', padding: 0 }}>
                   <View
                     style={{
-                      padding: 10, // Add padding around the image
-                      alignItems: 'center', // Center the image horizontally
-                      justifyContent: 'center', // Center the image vertically
+                      padding: 10,
+                      alignItems: 'center',
+                      justifyContent: 'center',
                     }}
                   >
                     <Image
-                      source={require("./assets/icons/logo.png")}
+                      source={require('./assets/icons/logo.png')}
                       style={{
                         width: 50,
                         height: 50,
-                        resizeMode: 'contain', // Ensure the logo maintains its aspect ratio
+                        resizeMode: 'contain',
                       }}
                     />
                   </View>
-                  {/* wheel icons  */}
-                   
-                   <TouchableOpacity
-               
-                    onPress={() => navigation.navigate(InputPage)}
-                    style={{
-                      position: "absolute",
-                      right: 65,
-                      zIndex: 100, // Ensure it's on top of other elements
-                      padding: 10 // Increase the touchable area
-                    }}
-                  >
-                    <Image
-                      source={require("./assets/icons/wheel.png")}
-                      style={{
-                        top: 10,
-                        width: 40,
-                        height: 40,
-                        paddingLeft:40,
-                         
-                      }}
-                    />
-                    
-                    
-                    
-                  </TouchableOpacity>
-
-                   
-                  {/* <TouchableOpacity
-                    onPress={() => navigation.navigate(ComingSoon)}
-                    style={{
-                      position: "absolute",
-                      right: 65,
-                      zIndex: 100, // Ensure it's on top of other elements
-                      padding: 10 // Increase the touchable area
-                    }}
-                  >
-                    <Image
-                      source={icons.bell}
-                      style={{
-                        top: 10,
-                        width: 40,
-                        height: 40,
-                        tintColor: "#FF3131",
-                      }}
-                    />
-                  </TouchableOpacity> */}
 
                   <TouchableOpacity
-                    onPress={() => navigation.navigate(ProfilePage)}
+                    onPress={() => navigation.navigate('InputPage')}
                     style={{
-                      position: "absolute",
-                      right: 10,
-                      zIndex: 100, // Ensure it's on top of other elements
-                      padding: 10 // Increase the touchable area
+                      position: 'absolute',
+                      right: 65,
+                      zIndex: 100,
+                      padding: 10,
                     }}
                   >
                     <Image
-                      source={icons.profile}
+                      source={require('./assets/icons/wheel.png')}
+                      style={{
+                        top: 10,
+                        width: 40,
+                        height: 40,
+                      }}
+                    />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('ProfilePage')}
+                    style={{
+                      position: 'absolute',
+                      right: 10,
+                      zIndex: 100,
+                      padding: 10,
+                    }}
+                  >
+                    <Image
+                      source={require('./assets/icons/profile.png')}
                       style={{
                         top: 11,
                         width: 30,
                         height: 30,
-                        tintColor: "#ff3131",
+                        tintColor: '#ff3131',
                       }}
                     />
                   </TouchableOpacity>
@@ -199,77 +186,42 @@ useEffect(()=>{
                   <Carousel />
                 </View>
 
-
-                {/*Image*/ }
-                <View >
-                  <TouchableOpacity onPress={()=>navigation.navigate("Register")}> 
-                  <ImageComponent/>
-                  {/* <Image  style={{height:180,width:200}} source={require("./assets/icons/Science Google Form Header.png")}/> */}
+                {/* ImageComponent Section */}
+                <View>
+                  <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                    <ImageComponent />
                   </TouchableOpacity>
                 </View>
-                {/* <View style={styles.divider}></View> */}
+
+                {/* Conditional Section */}
+                {isDataSubmitted && (
+                  <View style={{ padding: 10 , backgroundColor:'#fffff',}}>
+                    <Button
+                      title="Go to Payment and complete your registration"
+                      onPress={() => navigation.navigate('pay')}
+                    />
+                  </View>
+                )}
+
                 {/* Buttons Section */}
                 <View>
-                  {/*To go througth compionents Services */}
                   <Service />
                 </View>
-              
+
                 <View>
-                  {/* To go through component Modifications*/}
                   <Modifications />
                 </View>
 
                 <View style={styles.divider}></View>
                 <View style={{ paddingTop: 15, paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
                   {/* Modification Services Heading */}
-                  <View>
-
-                  </View>
-
-                  {/* Grid of services */}
-
+                  <View></View>
                 </View>
-                {/* <View style={styles.divider}></View> */}
+
                 <View>
-                  <SliderReel></SliderReel>
+                  <SliderReel />
                 </View>
-                
-                {/* FlatList for User Profiles */}
-                {/* <View style={styles.divider}></View> */}
-                <View style={styles.userListSection}>
-
-                  {/* <FlatList
-                    data={userData}
-                    keyExtractor={(item) => item.id}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity onPress={() => navigation.navigate(VendorList)}>
-                        <View style={styles.userItem}>
-                          <Image source={{ uri: item.dp }} style={styles.userImage} />
-                          <View style={styles.userInfo}>
-                            <Text style={styles.userName}>{item.name}</Text>
-                            <Text style={styles.userDescription}>{item.description}</Text>
-                          </View>
-                        </View>
-                      </TouchableOpacity>
-                    )}
-                    contentContainerStyle={{ paddingBottom: 20 }} // Add padding at the bottom
-                  /> */}
-
-                </View>
-
-                <View style={styles.divider}></View>
               </ScrollView>
-
-              {/* <TouchableOpacity
-                onPress={() => navigation.navigate(ComingSoon)}
-                style={styles.storeButton}
-              >
-                <Image
-                  source={{ uri: 'https://cdn-icons-png.flaticon.com/128/11424/11424862.png' }} // Store button icon
-                  style={styles.storeIcon}
-                />
-              </TouchableOpacity> */}
-
             </SafeAreaView>
           )}
         </Stack.Screen>
@@ -296,7 +248,7 @@ useEffect(()=>{
           <Stack.Screen name = "Data" component={Data}/>
     <Stack.Screen name= "payment" component={Payment} options={{headerShown:false}}/>
         {/* <Stack.Screen name='VendorDetail' component={VendorDetail}/> */}
-
+<Stack.Screen name="pay" component={Pay}/>
 
       </Stack.Navigator>
     </NavigationContainer>

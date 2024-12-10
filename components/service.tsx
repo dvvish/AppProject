@@ -12,6 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+
 interface Service {
   id: string;
   name: string;
@@ -25,7 +26,7 @@ const localIconMapping: Record<string, any> = {
   'parts': require('../assets/icons/s6.png'),
 };
 
-const service = async () => {
+const service = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
@@ -37,7 +38,7 @@ const service = async () => {
         const result = await response.json();
 
         // Extract the 'service' component
-        const serviceComponent = result.find((item: any) => item.component === 'service');
+        const serviceComponent = result.components.find((item: any) => item.component === 'service');
 
         if (serviceComponent && serviceComponent.data) {
           setServices(serviceComponent.data);
@@ -53,66 +54,60 @@ const service = async () => {
 
     fetchData();
   }, []);
-   // get vehicleData
-   
-   // if vehicle data is present navigate to services else first fill data //
-  const handlePress=async (service:Service) =>{
-    const data = await AsyncStorage.getItem('vehicleData');
-    //if vehicle data is available navigate to there respective page//
-    if(data){
-    if(service.name=="Parts"){
-      navigation.navigate("Parts")
+
+  const handlePress = async (service: Service) => {
+    const vehicleData = await AsyncStorage.getItem('vehicleData');
+    if (vehicleData) {
+      if (service.name === 'Parts') {
+        navigation.navigate('Parts');
+      } else if (service.name === 'Servicing') {
+        navigation.navigate('Servicing');
+      }
+    } else {
+      navigation.navigate('InputPage');
     }
-    else{
-    navigation.navigate('Servicing');
-  }
-}
-else{
-  navigation.navigate("InputPage");
-}
-}
+  };
 
   return (
-    <SafeAreaView  > 
-    <View style={{flexDirection: 'row',   justifyContent: 'space-between', marginBottom: 9}}> 
-    <View style={styles.container}>
-      {loading ? (
-        <ActivityIndicator size="large" color="#0000ff" />
-      ) : services.length > 0 ? (
-        <>
-          <Text style={styles.sectionTitle}>Services</Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
-            {services.map((service) => {
-              // Resolve local or remote icon
-              const localIcon = localIconMapping[service.icon];
-              const iconSource = localIcon
-                ? localIcon
-                : { uri: `https://mechbuddy.pythonanywhere.com/media/${service.icon}` };
+    <SafeAreaView>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 9 }}>
+        <View style={styles.container}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#0000ff" />
+          ) : services.length > 0 ? (
+            <>
+              <Text style={styles.sectionTitle}>Services</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.scrollView}>
+                {services.map((service) => {
+                  const localIcon = localIconMapping[service.icon];
+                  const iconSource = localIcon
+                    ? localIcon
+                    : { uri: `https://mechbuddy.pythonanywhere.com/media/${service.icon}` };
 
-              return (
-                <TouchableOpacity
-                  key={service.id}
-                  style={styles.card}
-                  onPress={() => handlePress(service)}
-                  activeOpacity={0.8}
-                >
-                  <Image source={iconSource} style={styles.icon} />
-                  <Text style={styles.name}>{service.name}</Text>
-                  <Text style={styles.description}>{service.description}</Text>
-
-                </TouchableOpacity>
-              );
-            })}
-          </ScrollView>
-        </>
-      ) : (
-        <Text style={styles.errorText}>No services available</Text>
-      )}
-    </View>
-    </View>
+                  return (
+                    <TouchableOpacity
+                      key={service.id}
+                      style={styles.card}
+                      onPress={() => handlePress(service)}
+                      activeOpacity={0.8}
+                    >
+                      <Image source={iconSource} style={styles.icon} />
+                      <Text style={styles.name}>{service.name}</Text>
+                      <Text style={styles.description}>{service.description}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
+            </>
+          ) : (
+            <Text style={styles.errorText}>No services available</Text>
+          )}
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {

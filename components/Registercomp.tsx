@@ -70,8 +70,10 @@ const Registercomp = () => {
       source,
       utr,
     };
-
+  //  const data= await AsyncStorage.setItem(userData);
     try {
+      // await AsyncStorage.setItem('userData');
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
       const response = await fetch('https://mechbuddy.pythonanywhere.com/api/register/', {
         method: 'POST',
         headers: {
@@ -242,11 +244,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     color: '#333',
     marginHorizontal: 20,
+     
   },
   dropdownText: {
     fontSize: 14,
     color: '#333',
     marginTop:10,
+    alignItems:'center',
   },
   
   
@@ -261,8 +265,8 @@ const styles = StyleSheet.create({
   modalContent: {
     width: '80%',
     backgroundColor: '#fff',
-    borderRadius: 10,
-     alignItems:'center',
+    borderRadius: 30,
+      
     paddingLeft:30
   },
   modalTitle: {

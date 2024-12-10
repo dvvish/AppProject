@@ -3,89 +3,89 @@ import { View, FlatList, Image, Dimensions, StyleSheet, TouchableOpacity, Activi
 
 const { width } = Dimensions.get('window');
 
+ 
 const Carousel = () => {
-    const [data, setData] = useState<{ id: string; imageUrl: string }[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const flatListRef = useRef<FlatList<any>>(null);
+  const [data, setData] = useState<{ id: string; imageUrl: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const flatListRef = useRef<FlatList<any>>(null);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
-                const result = await response.json();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
+        const result = await response.json();
 
-                // Filter for 'slider' component
-                const sliderComponent = result.find((item: any) => item.component === 'slider' || item.conponent === 'slider');
+        // Extract the 'slider' component
+        const sliderComponent = result.components.find((item: any) => item.component === 'slider');
 
-                if (sliderComponent && sliderComponent.data) {
-                    const formattedData = sliderComponent.data.map((item: { id: string; imageUrl: string }) => ({
-                        id: item.id,
-                        imageUrl: item.imageUrl,
-                    }));
-                    setData(formattedData.slice(0, 3));
-                    console.log("done"); // Limit to first 3 images
-                } else {
-                    console.warn('No slider component found in the API.');
-                }
-            } catch (error) {
-                console.error('Error fetching images:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData();
-    }, []);
-
-    const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
-        if (viewableItems.length > 0) {
-            setCurrentIndex(viewableItems[0].index);
+        if (sliderComponent && sliderComponent.data) {
+          const formattedData = sliderComponent.data.map((item: { id: string; imageUrl: string }) => ({
+            id: item.id,
+            imageUrl: item.imageUrl,
+          }));
+          setData(formattedData.slice(0, 3)); // Limit to the first 3 images
+        } else {
+          console.warn('No slider component found in the API.');
         }
-    }).current;
-
-    const viewabilityConfig = useRef({
-        viewAreaCoveragePercentThreshold: 80,
-    }).current;
-
-    const scrollToIndex = (index: number) => {
-        flatListRef.current?.scrollToIndex({ index });
+      } catch (error) {
+        console.error('Error fetching images:', error);
+      } finally {
+        setLoading(false);
+      }
     };
 
-    return (
-        <View style={styles.container}>
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-            ) : data.length > 0 ? (
-                <>
-                    <FlatList
-                        ref={flatListRef}
-                        data={data}
-                        renderItem={({ item }) => (
-                            <View style={styles.item}>
-                                <Image source={{ uri: item.imageUrl }} style={styles.image} />
-                            </View>
-                        )}
-                        horizontal
-                        pagingEnabled
-                        keyExtractor={(item) => item.id}
-                        showsHorizontalScrollIndicator={false}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        viewabilityConfig={viewabilityConfig}
-                    />
-                    <View style={styles.tabContainer}>
-                        {data.map((_, index) => (
-                            <TouchableOpacity key={index} onPress={() => scrollToIndex(index)}>
-                                <View style={[styles.tab, currentIndex === index && styles.tabActive]} />
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-                </>
-            ) : (
-                <Text style={styles.errorText}>No carousel data available</Text>
+    fetchData();
+  }, []);
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: any[] }) => {
+    if (viewableItems.length > 0) {
+      setCurrentIndex(viewableItems[0].index);
+    }
+  }).current;
+
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 80,
+  }).current;
+
+  const scrollToIndex = (index: number) => {
+    flatListRef.current?.scrollToIndex({ index });
+  };
+
+  return (
+    <View style={styles.container}>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : data.length > 0 ? (
+        <>
+          <FlatList
+            ref={flatListRef}
+            data={data}
+            renderItem={({ item }) => (
+              <View style={styles.item}>
+                <Image source={{ uri: item.imageUrl }} style={styles.image} />
+              </View>
             )}
-        </View>
-    );
+            horizontal
+            pagingEnabled
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            onViewableItemsChanged={onViewableItemsChanged}
+            viewabilityConfig={viewabilityConfig}
+          />
+          <View style={styles.tabContainer}>
+            {data.map((_, index) => (
+              <TouchableOpacity key={index} onPress={() => scrollToIndex(index)}>
+                <View style={[styles.tab, currentIndex === index && styles.tabActive]} />
+              </TouchableOpacity>
+            ))}
+          </View>
+        </>
+      ) : (
+        <Text style={styles.errorText}>No carousel data available</Text>
+      )}
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
