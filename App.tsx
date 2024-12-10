@@ -43,6 +43,8 @@ import DisplayData from './components/Displaydata';
 import Data from './components/Data';
 import Payment from './components/payment';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import Registercomp from './components/Registercomp';
+import ImageComponent from './components/ImageComponent';
 //import { icons } from './constants';
 
  
@@ -200,8 +202,9 @@ useEffect(()=>{
 
                 {/*Image*/ }
                 <View >
-                  <TouchableOpacity onPress={()=>navigation.navigate(RegisterUser)}> 
-                  <Image  style={{height:40,width:40}} source={{ uri:"https://cdn-icons-png.flaticon.com/128/18260/18260165.png"}}/>
+                  <TouchableOpacity onPress={()=>navigation.navigate("Register")}> 
+                  <ImageComponent/>
+                  {/* <Image  style={{height:180,width:200}} source={require("./assets/icons/Science Google Form Header.png")}/> */}
                   </TouchableOpacity>
                 </View>
                 {/* <View style={styles.divider}></View> */}
@@ -286,7 +289,7 @@ useEffect(()=>{
         <Stack.Screen name="App" component={App} />
         <Stack.Screen name="RegisterUser" component={RegisterUser} options={{headerShown:false}}/>
         {/* <Stack.Screen name="InputData"  component={DisplayData} /> */}
-
+   <Stack.Screen name="Register" component={Registercomp} options={{headerShown:false}}/>
         <Stack.Screen name="LoginUser" component={LoginUser} />
           <Stack.Screen name="InputPage" component={InputPage}/> 
         <Stack.Screen name="VendorDetails1" component={VendorDetails1} />
