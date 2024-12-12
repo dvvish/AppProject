@@ -47,6 +47,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import Registercomp from './components/Registercomp';
 import ImageComponent from './components/ImageComponent';
 import Pay from './components/Pay';
+import { useHandler } from 'react-native-reanimated';
 //import { icons } from './constants';
 
  
@@ -188,14 +189,20 @@ function App(): React.JSX.Element {
 
                 {/* ImageComponent Section */}
                 <View>
-                  <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+                  <TouchableOpacity
+                    onPress={() =>
+                      isDataSubmitted
+                        ? navigation.navigate('pay') // Navigate to Pay page if data is submitted
+                        : navigation.navigate('Register') // Navigate to Register page if data is not submitted
+                    }
+                  >
                     <ImageComponent />
                   </TouchableOpacity>
                 </View>
 
                 {/* Conditional Section */}
                 {isDataSubmitted && (
-                  <View style={{ padding: 10 , backgroundColor:'#fffff',}}>
+                  <View style={{ padding: 10, backgroundColor: '#fffff' }}>
                     <Button
                       title="Go to Payment and complete your registration"
                       onPress={() => navigation.navigate('pay')}
@@ -227,33 +234,29 @@ function App(): React.JSX.Element {
         </Stack.Screen>
 
         <Stack.Screen name="ComingSoon" component={ComingSoon} />
-        {/* <Stack.Screen name="VendorDetail" component={VendorDetail} />
-        <Stack.Screen name='VendorDetails' component={VendorDetails}/> */}
-        <Stack.Screen name='VendorList' component={VendorList} />
-        <Stack.Screen name='Servicing' component={Servicing} options={{ headerShown: true }} />
-        <Stack.Screen name='Parts' component={Parts} options={{ headerShown: true }} />
-        <Stack.Screen name='PartDetails' component={PartDetails} />
-        <Stack.Screen name='AvailableVendors' component={AvailableVendors} />
-        <Stack.Screen name='VendorDetails' component={VendorDetails} options={{headerShown:false}} />
+        <Stack.Screen name="VendorList" component={VendorList} />
+        <Stack.Screen name="Servicing" component={Servicing} options={{ headerShown: true }} />
+        <Stack.Screen name="Parts" component={Parts} options={{ headerShown: true }} />
+        <Stack.Screen name="PartDetails" component={PartDetails} />
+        <Stack.Screen name="AvailableVendors" component={AvailableVendors} />
+        <Stack.Screen name="VendorDetails" component={VendorDetails} options={{ headerShown: false }} />
         <Stack.Screen name="ProfilePage" component={ProfilePage} />
         <Stack.Screen name="IntroScreen" component={IntroScreen} />
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="App" component={App} />
-        <Stack.Screen name="RegisterUser" component={RegisterUser} options={{headerShown:false}}/>
-        {/* <Stack.Screen name="InputData"  component={DisplayData} /> */}
-   <Stack.Screen name="Register" component={Registercomp} options={{headerShown:false}}/>
+        <Stack.Screen name="RegisterUser" component={RegisterUser} options={{ headerShown: false }} />
+        <Stack.Screen name="Register" component={Registercomp} options={{ headerShown: false }} />
         <Stack.Screen name="LoginUser" component={LoginUser} />
-          <Stack.Screen name="InputPage" component={InputPage}/> 
+        <Stack.Screen name="InputPage" component={InputPage} />
         <Stack.Screen name="VendorDetails1" component={VendorDetails1} />
-          <Stack.Screen name = "Data" component={Data}/>
-    <Stack.Screen name= "payment" component={Payment} options={{headerShown:false}}/>
-        {/* <Stack.Screen name='VendorDetail' component={VendorDetail}/> */}
-<Stack.Screen name="pay" component={Pay}/>
-
+        <Stack.Screen name="Data" component={Data} />
+        <Stack.Screen name="payment" component={Payment} options={{ headerShown: false }} />
+        <Stack.Screen name="pay" component={Pay} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {

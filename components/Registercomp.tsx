@@ -3,23 +3,25 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   TouchableOpacity,
   Modal,
-  FlatList,
+  StyleSheet,
+  ScrollView,
   Alert,
+  Linking,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useNavigation, useRoute } from '@react-navigation/native';
-//import { ScrollView } from 'react-native-reanimated/lib/typescript/Animated';
-import { ScrollView } from 'react-native';
-
-type RegisterParams = {
-  username: string;
-  email: string;
-};
+import { useNavigation } from '@react-navigation/native';
 
 const Registercomp = () => {
+  const [inputErrors, setInputErrors] = useState({
+    name: '',
+    email: '',
+    contact: '',
+    category: '',
+    city: '',
+    terms: '',
+  });
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [contact, setContact] = useState('');
@@ -34,29 +36,79 @@ const Registercomp = () => {
 
   const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
   const [isSourceModalVisible, setSourceModalVisible] = useState(false);
+  const [isChecked, setIsChecked] = useState(false);
+  const [policyLink, setPolicyLink] = useState<string | null>(null);
 
-  const navigation = useNavigation();
-  const route = useRoute();
-
-  // Options for Category and Source
   const categoryOptions = ['Designing', 'UI/UX', 'Video Editing'];
   const sourceOptions = ['LinkedIn', 'Instagram', 'WhatsApp', 'Other'];
 
-  // Populate username and email from AsyncStorage
+  const navigation = useNavigation();
+
   useEffect(() => {
     const fetchData = async () => {
       const savedUsername = await AsyncStorage.getItem('username');
       const savedEmail = await AsyncStorage.getItem('email');
-
+        //  await AsyncStorage.setItem('userData')
       if (savedUsername) setName(savedUsername);
       if (savedEmail) setEmail(savedEmail);
+
+      // Fetch policy link from the API
+      try {
+        const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
+        const result = await response.json();
+
+        if (result.others && result.others.policy) {
+          setPolicyLink(result.others.policy);
+        } else {
+          console.warn('No policy link found in the API.');
+        }
+      } catch (error) {
+        console.error('Error fetching policy link:', error);
+      }
     };
 
     fetchData();
   }, []);
 
+  const validateInputs = () => {
+    let errors = { name: '', email: '', contact: '', category: '', city: '', terms: '' };
+    let isValid = true;
+
+    if (!name.trim()) {
+      errors.name = 'Name is required.';
+      isValid = false;
+    }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      errors.email = 'A valid email is required.';
+      isValid = false;
+    }
+    if (!contact.trim() || !/^\d{10}$/.test(contact)) {
+      errors.contact = 'Contact must be a 10-digit number.';
+      isValid = false;
+    }
+    if (!category) {
+      errors.category = 'Category selection is required.';
+      isValid = false;
+    }
+    if (!city.trim()) {
+      errors.city = 'City is required.';
+      isValid = false;
+    }
+    if (!isChecked) {
+      errors.terms = 'You must agree to the terms and conditions.';
+      isValid = false;
+    }
+
+    setInputErrors(errors);
+    return isValid;
+  };
+
   const handleRegister = async () => {
-    setError(null); // Clear previous errors
+    setError(null);
+
+    if (!validateInputs()) {
+      return;
+    }
 
     const userData = {
       name,
@@ -70,9 +122,8 @@ const Registercomp = () => {
       source,
       utr,
     };
-  //  const data= await AsyncStorage.setItem(userData);
+
     try {
-      // await AsyncStorage.setItem('userData');
       await AsyncStorage.setItem('userData', JSON.stringify(userData));
       const response = await fetch('https://mechbuddy.pythonanywhere.com/api/register/', {
         method: 'POST',
@@ -87,11 +138,12 @@ const Registercomp = () => {
         throw new Error(errorResponse?.message || 'Registration failed. Please try again.');
       }
 
-      const result = await response.json();
       Alert.alert('Success', 'Registration completed successfully!');
-      console.log('Response:', result);
-
-      navigation.navigate('Home'); // Replace 'Home' with the actual route name
+      // const Data =await AsyncStorage.setItem('userData');
+     
+      navigation.navigate('pay');
+      
+       
     } catch (err: any) {
       console.error('Error during registration:', err);
       setError(err.message || 'An unknown error occurred.');
@@ -100,125 +152,152 @@ const Registercomp = () => {
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <Text style={styles.title}>Registration</Text>
+        {error && <Text style={styles.error}>{error}</Text>}
 
-    <View style={styles.container}>
-      <Text style={styles.title}>Registration</Text>
-      {error && <Text style={styles.error}>{error}</Text>}
+        {/* Registration Form */}
+        <TextInput
+          style={styles.input}
+          placeholder="Username"
+          value={name}
+          onChangeText={setName}
+          placeholderTextColor="#999"
+        />
+        {inputErrors.name && <Text style={styles.errorText}>{inputErrors.name}</Text>}
 
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        value={name}
-        onChangeText={setName}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Contact"
-        value={contact}
-        onChangeText={setContact}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Occupation"
-        value={occupations}
-        onChangeText={setOccupation}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="College"
-        value={college}
-        onChangeText={setCollege}
-        placeholderTextColor="#999"
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="Email"
+          value={email}
+          onChangeText={setEmail}
+          placeholderTextColor="#999"
+        />
+        {inputErrors.email && <Text style={styles.errorText}>{inputErrors.email}</Text>}
 
-      {/* Category Field */}
-      <TouchableOpacity style={styles.dropdown} onPress={() => setCategoryModalVisible(true)}>
-        <Text style={styles.dropdownText}>{category || 'Select Category'}</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Contact"
+          value={contact}
+          onChangeText={setContact}
+          placeholderTextColor="#999"
+        />
+        {inputErrors.contact && <Text style={styles.errorText}>{inputErrors.contact}</Text>}
 
-      {/* Source Field */}
-      <TouchableOpacity style={styles.dropdown} onPress={() => setSourceModalVisible(true)}>
-        <Text style={styles.dropdownText}>{source || 'Select Source'}</Text>
-      </TouchableOpacity>
+        <TextInput
+          style={styles.input}
+          placeholder="Occupation"
+          value={occupations}
+          onChangeText={setOccupation}
+          placeholderTextColor="#999"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="City"
-        value={city}
-        onChangeText={setCity}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Referral Code"
-        value={referal}
-        onChangeText={setReferal}
-        placeholderTextColor="#999"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your Transaction details/ UTR NO."
-        value={utr}
-        onChangeText={setUtr}
-        placeholderTextColor="#999"
-      />
+        <TextInput
+          style={styles.input}
+          placeholder="College"
+          value={college}
+          onChangeText={setCollege}
+          placeholderTextColor="#999"
+        />
 
-      <TouchableOpacity style={styles.button} onPress={handleRegister}>
-        <Text style={styles.buttonText}>Register</Text>
-      </TouchableOpacity>
+        {/* Category Field */}
+        <TouchableOpacity style={styles.dropdown} onPress={() => setCategoryModalVisible(true)}>
+          <Text style={styles.dropdownText}>{category || 'Select Category'}</Text>
+        </TouchableOpacity>
+        {inputErrors.category && <Text style={styles.errorText}>{inputErrors.category}</Text>}
 
-      {/* Category Modal */}
-      <Modal visible={isCategoryModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Category</Text>
-            {categoryOptions.map((option, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.modalOption}
-                onPress={() => {
-                  setCategory(option);
-                  setCategoryModalVisible(false);
-                }}
-              >
-                <Text style={styles.optionText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+        {/* Source Field */}
+        <TouchableOpacity style={styles.dropdown} onPress={() => setSourceModalVisible(true)}>
+          <Text style={styles.dropdownText}>{source || 'Select Source'}</Text>
+        </TouchableOpacity>
+
+        <TextInput
+          style={styles.input}
+          placeholder="City"
+          value={city}
+          onChangeText={setCity}
+          placeholderTextColor="#999"
+        />
+        {inputErrors.city && <Text style={styles.errorText}>{inputErrors.city}</Text>}
+
+        <TextInput
+          style={styles.input}
+          placeholder="Referral Code"
+          value={referal}
+          onChangeText={setReferal}
+          placeholderTextColor="#999"
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Enter your Transaction details/UTR NO."
+          value={utr}
+          onChangeText={setUtr}
+          placeholderTextColor="#999"
+        />
+
+        {/* Terms and Conditions Checkbox */}
+        <View style={styles.termsContainer}>
+          <TouchableOpacity onPress={() => setIsChecked(!isChecked)} style={styles.checkbox}>
+            {isChecked && <View style={styles.checkboxTick} />}
+          </TouchableOpacity>
+          <Text style={styles.termsText}>
+            I agree to the{' '}
+            <Text
+              style={styles.link}
+              onPress={() => policyLink && Linking.openURL(policyLink)}
+            >
+              Terms and Conditions
+            </Text>
+          </Text>
         </View>
-      </Modal>
+        {inputErrors.terms && <Text style={styles.errorText}>{inputErrors.terms}</Text>}
 
-      {/* Source Modal */}
-      <Modal visible={isSourceModalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Select Source</Text>
-            {sourceOptions.map((option, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.modalOption}
-                onPress={() => {
-                  setSource(option);
-                  setSourceModalVisible(false);
-                }}
-              >
-                <Text style={styles.optionText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
+        <TouchableOpacity style={styles.button} onPress={handleRegister}>
+          <Text style={styles.buttonText}>Register</Text>
+        </TouchableOpacity>
+
+        {/* Category Modal */}
+        <Modal visible={isCategoryModalVisible} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Category</Text>
+              {categoryOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.modalOption}
+                  onPress={() => {
+                    setCategory(option);
+                    setCategoryModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.optionText}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
-        </View>
-      </Modal>
-    </View>
+        </Modal>
+
+        {/* Source Modal */}
+        <Modal visible={isSourceModalVisible} transparent animationType="slide">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Select Source</Text>
+              {sourceOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={styles.modalOption}
+                  onPress={() => {
+                    setSource(option);
+                    setSourceModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.optionText}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </View>
+        </Modal>
+      </View>
     </ScrollView>
   );
 };
@@ -226,14 +305,31 @@ const Registercomp = () => {
 export default Registercomp;
 
 const styles = StyleSheet.create({
-  
-  
-  
-  scrollContainer:{
-    flexGrow:1,
-  }
-  ,
-  
+  checkbox: {
+    width: 20,
+    height: 20,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  checkboxTick: {
+    width: 12,
+    height: 12,
+    backgroundColor: '#4caf50',
+  },
+  termsText: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  link: {
+    color: '#1e90ff',
+    textDecorationLine: 'underline',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+  },
   dropdown: {
     height: 50,
     borderColor: '#ccc',
@@ -244,21 +340,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     color: '#333',
     marginHorizontal: 20,
-     
   },
   dropdownText: {
     fontSize: 14,
     color: '#333',
-    marginTop:10,
-    alignItems:'center',
+    marginTop: 10,
+    alignItems: 'center',
   },
-  
-  
-  
-  
   modalOverlay: {
     flex: 1,
-   justifyContent: 'center',
+    justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
@@ -266,17 +357,16 @@ const styles = StyleSheet.create({
     width: '80%',
     backgroundColor: '#fff',
     borderRadius: 30,
-      
-    paddingLeft:30
+    paddingLeft: 30,
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     marginBottom: 16,
-    alignContent:'center',
-    textAlign:'center',
-    paddingTop:30,
-    alignItems:'center',
+    alignContent: 'center',
+    textAlign: 'center',
+    paddingTop: 30,
+    alignItems: 'center',
   },
   modalOption: {
     padding: 16,
@@ -309,6 +399,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#f9f9f9',
     color: '#333',
     marginHorizontal: 20,
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 10,
+    marginLeft: 20,
+    fontSize: 12,
   },
   error: {
     color: 'red',
