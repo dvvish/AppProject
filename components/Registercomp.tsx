@@ -1,3 +1,5 @@
+ 
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -5,39 +7,56 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  StyleSheet,
   ScrollView,
   Alert,
   Linking,
+  StyleSheet,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
+ // Assume appropriate styles are defined
 
+//  import React, { useState, useEffect } from 'react';
+//  import {
+//    ScrollView,
+//    View,
+//    Text,
+//    TextInput,
+//    TouchableOpacity,
+//    Alert,
+//    Modal,
+//    Linking,
+//  } from 'react-native';
+//  import AsyncStorage from '@react-native-async-storage/async-storage';
+//  import { useNavigation } from '@react-navigation/native';
+//  import styles from './styles'; // Assuming you have a styles file
+ 
 const Registercomp = () => {
   const [inputErrors, setInputErrors] = useState({
-    name: '',
+    username: '',
     email: '',
-    contact: '',
+    password: '',
     category: '',
     city: '',
     terms: '',
   });
-  const [name, setName] = useState('');
+
+  const [username, setUsername] = useState('');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
-  const [contact, setContact] = useState('');
-  const [occupations, setOccupation] = useState('');
+  const [password, setPassword] = useState('');
+  const [occupation, setOccupation] = useState('');
   const [college, setCollege] = useState('');
   const [category, setCategory] = useState('');
   const [city, setCity] = useState('');
-  const [referal, setReferal] = useState('');
+  const [referral, setReferral] = useState('');
   const [source, setSource] = useState('');
-  const [utr, setUtr] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
+  const [isChecked, setIsChecked] = useState(false);
   const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
   const [isSourceModalVisible, setSourceModalVisible] = useState(false);
-  const [isChecked, setIsChecked] = useState(false);
   const [policyLink, setPolicyLink] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const categoryOptions = ['Designing', 'UI/UX', 'Video Editing'];
   const sourceOptions = ['LinkedIn', 'Instagram', 'WhatsApp', 'Other'];
@@ -45,45 +64,42 @@ const Registercomp = () => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    const fetchData = async () => {
-      const savedUsername = await AsyncStorage.getItem('username');
-      const savedEmail = await AsyncStorage.getItem('email');
-        //  await AsyncStorage.setItem('userData')
-      if (savedUsername) setName(savedUsername);
-      if (savedEmail) setEmail(savedEmail);
-
-      // Fetch policy link from the API
+    const fetchPolicyLink = async () => {
       try {
         const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
         const result = await response.json();
-
-        if (result.others && result.others.policy) {
+        if (result.others?.policy) {
           setPolicyLink(result.others.policy);
-        } else {
-          console.warn('No policy link found in the API.');
         }
       } catch (error) {
         console.error('Error fetching policy link:', error);
       }
     };
 
-    fetchData();
+    fetchPolicyLink();
   }, []);
 
   const validateInputs = () => {
-    let errors = { name: '', email: '', contact: '', category: '', city: '', terms: '' };
+    let errors = {
+      username: '',
+      email: '',
+      password: '',
+      category: '',
+      city: '',
+      terms: '',
+    };
     let isValid = true;
 
-    if (!name.trim()) {
-      errors.name = 'Name is required.';
+    if (!username.trim()) {
+      errors.username = 'Username is required.';
       isValid = false;
     }
     if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       errors.email = 'A valid email is required.';
       isValid = false;
     }
-    if (!contact.trim() || !/^\d{10}$/.test(contact)) {
-      errors.contact = 'Contact must be a 10-digit number.';
+    if (!password.trim()) {
+      errors.password = 'Password is required.';
       isValid = false;
     }
     if (!category) {
@@ -105,32 +121,37 @@ const Registercomp = () => {
 
   const handleRegister = async () => {
     setError(null);
+    // await AsyncStorage.setItem('userdata');
 
     if (!validateInputs()) {
       return;
     }
 
     const userData = {
-      name,
+      username,
+      first_name: firstName,
+      last_name: lastName,
       email,
-      contact,
-      occupations,
+      password,
+      occupation,
       college,
       category,
       city,
-      referal,
+      referral,
       source,
-      utr,
     };
 
     try {
-      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+       
+       
+      
       const response = await fetch('https://mechbuddy.pythonanywhere.com/api/register/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(userData),
+         
       });
 
       if (!response.ok) {
@@ -138,12 +159,16 @@ const Registercomp = () => {
         throw new Error(errorResponse?.message || 'Registration failed. Please try again.');
       }
 
+      const result = await response.json();
+      if (result.token) {
+        console.log(result.token);
+        await AsyncStorage.setItem('authToken', result.token);
+      }
+      await AsyncStorage.setItem('userData', JSON.stringify(userData));
+        console.log('userData');
       Alert.alert('Success', 'Registration completed successfully!');
-      // const Data =await AsyncStorage.setItem('userData');
-     
       navigation.navigate('pay');
       
-       
     } catch (err: any) {
       console.error('Error during registration:', err);
       setError(err.message || 'An unknown error occurred.');
@@ -156,15 +181,30 @@ const Registercomp = () => {
         <Text style={styles.title}>Registration</Text>
         {error && <Text style={styles.error}>{error}</Text>}
 
-        {/* Registration Form */}
         <TextInput
           style={styles.input}
-          placeholder="Username"
-          value={name}
-          onChangeText={setName}
+          placeholder="Whatsapp "
+          value={username}
+          onChangeText={setUsername}
           placeholderTextColor="#999"
         />
-        {inputErrors.name && <Text style={styles.errorText}>{inputErrors.name}</Text>}
+        {inputErrors.username && <Text style={styles.errorText}>{inputErrors.username}</Text>}
+
+        <TextInput
+          style={styles.input}
+          placeholder="First Name"
+          value={firstName}
+          onChangeText={setFirstName}
+          placeholderTextColor="#999"
+        />
+
+        <TextInput
+          style={styles.input}
+          placeholder="Last Name"
+          value={lastName}
+          onChangeText={setLastName}
+          placeholderTextColor="#999"
+        />
 
         <TextInput
           style={styles.input}
@@ -177,17 +217,18 @@ const Registercomp = () => {
 
         <TextInput
           style={styles.input}
-          placeholder="Contact"
-          value={contact}
-          onChangeText={setContact}
+          placeholder="Password"
+          secureTextEntry
+          value={password}
+          onChangeText={setPassword}
           placeholderTextColor="#999"
         />
-        {inputErrors.contact && <Text style={styles.errorText}>{inputErrors.contact}</Text>}
+        {inputErrors.password && <Text style={styles.errorText}>{inputErrors.password}</Text>}
 
         <TextInput
           style={styles.input}
           placeholder="Occupation"
-          value={occupations}
+          value={occupation}
           onChangeText={setOccupation}
           placeholderTextColor="#999"
         />
@@ -200,13 +241,11 @@ const Registercomp = () => {
           placeholderTextColor="#999"
         />
 
-        {/* Category Field */}
         <TouchableOpacity style={styles.dropdown} onPress={() => setCategoryModalVisible(true)}>
           <Text style={styles.dropdownText}>{category || 'Select Category'}</Text>
         </TouchableOpacity>
         {inputErrors.category && <Text style={styles.errorText}>{inputErrors.category}</Text>}
 
-        {/* Source Field */}
         <TouchableOpacity style={styles.dropdown} onPress={() => setSourceModalVisible(true)}>
           <Text style={styles.dropdownText}>{source || 'Select Source'}</Text>
         </TouchableOpacity>
@@ -223,19 +262,11 @@ const Registercomp = () => {
         <TextInput
           style={styles.input}
           placeholder="Referral Code"
-          value={referal}
-          onChangeText={setReferal}
-          placeholderTextColor="#999"
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Enter your Transaction details/UTR NO."
-          value={utr}
-          onChangeText={setUtr}
+          value={referral}
+          onChangeText={setReferral}
           placeholderTextColor="#999"
         />
 
-        {/* Terms and Conditions Checkbox */}
         <View style={styles.termsContainer}>
           <TouchableOpacity onPress={() => setIsChecked(!isChecked)} style={styles.checkbox}>
             {isChecked && <View style={styles.checkboxTick} />}
@@ -256,7 +287,6 @@ const Registercomp = () => {
           <Text style={styles.buttonText}>Register</Text>
         </TouchableOpacity>
 
-        {/* Category Modal */}
         <Modal visible={isCategoryModalVisible} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -277,7 +307,6 @@ const Registercomp = () => {
           </View>
         </Modal>
 
-        {/* Source Modal */}
         <Modal visible={isSourceModalVisible} transparent animationType="slide">
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
@@ -301,8 +330,13 @@ const Registercomp = () => {
     </ScrollView>
   );
 };
+ 
+ export default Registercomp;
+ 
 
-export default Registercomp;
+//export default Registercomp;
+
+// export default Registercomp;
 
 const styles = StyleSheet.create({
   checkbox: {
@@ -312,7 +346,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 8,
+    marginRight: 18,
   },
   checkboxTick: {
     width: 12,

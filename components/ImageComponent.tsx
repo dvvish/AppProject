@@ -1,8 +1,22 @@
-import React from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import React, { useEffect } from 'react';
 import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
  
 
 const ImageComponent: React.FC = () => {
+  useEffect(() => {
+    const checkData = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        setIsDataSubmitted(!!userData); // Set true if userData exists
+      } catch (err) {
+        console.error('Error fetching data from AsyncStorage:', err);
+      }
+    };
+
+    checkData();
+  }, []);
+
   return (
     
     <View style={styles.container}>
@@ -35,3 +49,7 @@ const styles = StyleSheet.create({
 });
 
 export default ImageComponent;
+function setIsDataSubmitted(arg0: boolean) {
+  throw new Error('Function not implemented.');
+}
+

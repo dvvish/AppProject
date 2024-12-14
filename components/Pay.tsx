@@ -15,6 +15,23 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
 
+// import React, { useEffect, useState } from 'react';
+// import {
+//   ScrollView,
+//   View,
+//   Text,
+//   Image,
+//   TextInput,
+//   Button,
+//   TouchableOpacity,
+//   Alert,
+//   ActivityIndicator,
+//   Linking,
+// } from 'react-native';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { useNavigation } from '@react-navigation/native';
+//import styles from './styles'; // Assuming you have a `styles` file
+
 const Pay = (): React.JSX.Element => {
   const [userData, setUserData] = useState<any>(null);
   const [paymentQr, setPaymentQr] = useState<string | null>(null);
@@ -28,6 +45,7 @@ const Pay = (): React.JSX.Element => {
         const data = await AsyncStorage.getItem('userData');
         if (data) {
           setUserData(JSON.parse(data));
+          console.log(data);
         } else {
           console.log('No user data found');
         }
@@ -64,17 +82,26 @@ const Pay = (): React.JSX.Element => {
     }
 
     try {
+      const token = await AsyncStorage.getItem('authToken'); // Retrieve the token from AsyncStorage
+
+      if (!token) {
+        Alert.alert('Error', 'Authentication token not found. Please log in again.');
+        navigation.navigate('Register'); // Redirect to registration if no token is found
+        return;
+      }
+
       const response = await fetch('https://mechbuddy.pythonanywhere.com/api/register-transaction/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Authorization: "Token " + token, // Include the token in the Authorization header
         },
-        body: JSON.stringify({ utr, userId: userData?.id }),
+        body: JSON.stringify({ utr: utr }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        Alert.alert('Success', 'Transaction registered successfully!');
+        Alert.alert('Success', result.message);
         navigation.navigate('Home');
         setUtr('');
       } else {
@@ -83,7 +110,7 @@ const Pay = (): React.JSX.Element => {
       }
     } catch (error) {
       console.error('Error submitting UTR:', error);
-      Alert.alert('Error', 'An error occurred while submitting the transaction.');
+      Alert.alert('Error', 'An error occurred while submitting the transaction.' + error);
     }
   };
 
@@ -115,51 +142,60 @@ const Pay = (): React.JSX.Element => {
             </View>
           )}
           <Text style={styles.qrText}>*Scan this QR for Payment</Text>
-          <Text style={{fontSize:20,alignItems:'center',textAlign:'center',marginTop:-10}}>Rs : 249/- </Text>
-          {userData ? (
-            <View>
-              <Text style={styles.heading}>User Information</Text>
-              <View style={styles.infoContainer}>
-                <Text style={styles.label}>Name:</Text>
-                <Text style={styles.value}>{userData.name}</Text>
-              </View>
-              <View style={styles.infoContainer}>
-                <Text style={styles.label}>Email:</Text>
-                <Text style={styles.value}>{userData.email}</Text>
-              </View>
-            </View>
-          ) : (
-            <View>
-              <Text style={styles.message}>No user data found. Please register first.</Text>
-              <Button
-                title="Go to Register"
-                onPress={() => navigation.navigate('Register')}
-              />
+          <Text
+            style={{
+              fontSize: 20,
+              alignItems: 'center',
+              textAlign: 'center',
+              marginTop: -10,
+            }}
+          >
+            Rs : 249/-
+          </Text>
+
+          {userData && (
+            <View  >
+              <Text >User Information</Text>
+              <Text  >Username: {userData.username}</Text>
+              <Text  >Email: {userData.email}</Text>
             </View>
           )}
+
+          <View style={styles.infoContainer}>
+            <Text style={styles.label}>Enter Transaction ID / UTR:</Text>
+          </View>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter UTR / Transaction Id"
+            value={utr}
+            onChangeText={setUtr}
+            placeholderTextColor="#999"
+          />
+          <Button title="Submit UTR" onPress={submitTransaction} />
+          <Text style={styles.heading}>
+            For any type of queries please Contact:
+          </Text>
+          <TouchableOpacity onPress={() => handlePhoneCall('8435776053')}>
+            <Text style={styles.phoneNumber}>
+              Contact Support: 8435776053
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => handleEmail('support@mechbuddy.in')}>
+            <Text style={styles.emailText}>
+              Email Support: support@mechbuddy.in
+            </Text>
+          </TouchableOpacity>
         </>
       )}
-      <View style={styles.infoContainer}>
-        <Text style={styles.label}>Enter Transaction ID / UTR:</Text>
-      </View>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter UTR / Transaction Id"
-        value={utr}
-        onChangeText={setUtr}
-        placeholderTextColor="#999"
-      />
-      <Button title="Submit UTR" onPress={submitTransaction} />
-      <Text style={styles.heading}>For any type of queries please Contact:</Text>
-      <TouchableOpacity onPress={() => handlePhoneCall('8435776053')}>
-        <Text style={styles.phoneNumber}>Contact Support: 8435776053</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => handleEmail('support@mechbuddy.in')}>
-        <Text style={styles.emailText}>Email Support: support@mechbuddy.in</Text>
-      </TouchableOpacity>
     </ScrollView>
   );
 };
+
+export default Pay;
+
+
+  
+
 
 const styles = StyleSheet.create({
   container: {

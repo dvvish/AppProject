@@ -12,6 +12,7 @@ import {
   Image,
   FlatList,
   Button,
+  Alert,
 } from 'react-native';
 import { RootStackParamList } from './types';
 import ComingSoon from './components/comingsoon';
@@ -76,45 +77,63 @@ const Stack = createNativeStackNavigator();
 // for getting integration of firebase config//
 
 function App(): React.JSX.Element {
-  const [isDataSubmitted, setIsDataSubmitted] = useState(false);
+ // const [isDataSubmitted, setIsDataSubmitted] = useState(false); // For registration status
+  //const [isPaymentRequired, setIsPaymentRequired] = useState(false); // For payment status
 
   // Fetch saved data from AsyncStorage
-  useEffect(() => {
-    const checkData = async () => {
-      try {
-        const userData = await AsyncStorage.getItem('userData');
-        setIsDataSubmitted(!!userData); // Set true if userData exists
-      } catch (err) {
-        console.error('Error fetching data from AsyncStorage:', err);
+  // useEffect(() => {
+  //   const checkData = async () => {
+  //     try {
+  //       const userData = await AsyncStorage.getItem('userData');
+  //       setIsDataSubmitted(!!userData); // Set true if userData exists
+  //     } catch (err) {
+  //       console.error('Error fetching data from AsyncStorage:', err);
+  //     }
+  //   };
+
+    // const fetchData = async () => {
+    //   try {
+    //     const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
+    //     const data = await response.json();
+    //     setIsPaymentRequired(!data?.others?.payment); // Set true if payment is false
+    //   } catch (err) {
+    //     console.error('Error fetching API data:', err);
+    //   }
+    // };
+
+    // checkData();
+    //fetchData();
+  
+
+  const handlePaymentButton = async (navigation: any) => {
+    try {
+      const isPaid = await AsyncStorage.getItem('ispaid');
+      if (isPaid === 'true') {
+        Alert.alert('Payment Status', 'Payment already completed.');
+      } else {
+        navigation.navigate('pay');
       }
-    };
-
-    checkData();
-  }, []);
-
-  // Permissions and token fetching logic
-  async function requestUserPermission() {
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    if (enabled) {
-      console.log('Authorization status:', authStatus);
-    } else {
-      console.log('FAIL');
+    } catch (error) {
+      console.error('Error fetching payment status:', error);
     }
-  }
-
-  const getToken = async () => {
-    const token = await messaging().getToken();
-    console.log('Token = ', token);
   };
 
-  useEffect(() => {
-    requestUserPermission();
-    getToken();
-  }, []);
+  const handleImageClick = async (navigation: any) => {
+    try {
+      const token = await AsyncStorage.getItem('authToken'); // Replace 'authToken' with your actual key
+      if (token) {
+        console.log(token);
+        // Navigate to pay screen if token exists
+        navigation.navigate('pay');
+      } else {
+        // Navigate to Register screen if no token
+        navigation.navigate('Register');
+      }
+    } catch (error) {
+      console.error('Error checking token:', error);
+      navigation.navigate('Register');
+    }
+  };
 
   return (
     <NavigationContainer>
@@ -182,33 +201,26 @@ function App(): React.JSX.Element {
                     />
                   </TouchableOpacity>
                 </View>
-
                 <View style={{ padding: 20 }}>
                   <Carousel />
                 </View>
 
                 {/* ImageComponent Section */}
                 <View>
-                  <TouchableOpacity
-                    onPress={() =>
-                      isDataSubmitted
-                        ? navigation.navigate('pay') // Navigate to Pay page if data is submitted
-                        : navigation.navigate('Register') // Navigate to Register page if data is not submitted
-                    }
-                  >
+                  <TouchableOpacity onPress={() => handleImageClick(navigation)}>
                     <ImageComponent />
                   </TouchableOpacity>
                 </View>
 
-                {/* Conditional Section */}
-                {isDataSubmitted && (
-                  <View style={{ padding: 10, backgroundColor: '#fffff' }}>
+                {/* Conditional Button */}
+                {/* {isDataSubmitted &&   (
+                  <View style={{ padding: 10, backgroundColor: '#ffffff' }}>
                     <Button
                       title="Go to Payment and complete your registration"
-                      onPress={() => navigation.navigate('pay')}
+                      onPress={() => handlePaymentButton(navigation)}
                     />
                   </View>
-                )}
+                )} */}
 
                 {/* Buttons Section */}
                 <View>
@@ -232,30 +244,36 @@ function App(): React.JSX.Element {
             </SafeAreaView>
           )}
         </Stack.Screen>
-
         <Stack.Screen name="ComingSoon" component={ComingSoon} />
-        <Stack.Screen name="VendorList" component={VendorList} />
-        <Stack.Screen name="Servicing" component={Servicing} options={{ headerShown: true }} />
-        <Stack.Screen name="Parts" component={Parts} options={{ headerShown: true }} />
-        <Stack.Screen name="PartDetails" component={PartDetails} />
-        <Stack.Screen name="AvailableVendors" component={AvailableVendors} />
-        <Stack.Screen name="VendorDetails" component={VendorDetails} options={{ headerShown: false }} />
+        {/* <Stack.Screen name="VendorDetail" component={VendorDetail} />
+        <Stack.Screen name='VendorDetails' component={VendorDetails}/> */}
+        <Stack.Screen name='VendorList' component={VendorList} />
+        <Stack.Screen name='Servicing' component={Servicing} options={{ headerShown: true }} />
+        <Stack.Screen name='Parts' component={Parts} options={{ headerShown: true }} />
+        <Stack.Screen name='PartDetails' component={PartDetails} />
+        <Stack.Screen name='AvailableVendors' component={AvailableVendors} />
+        <Stack.Screen name='VendorDetails' component={VendorDetails} options={{headerShown:false}} />
         <Stack.Screen name="ProfilePage" component={ProfilePage} />
         <Stack.Screen name="IntroScreen" component={IntroScreen} />
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="App" component={App} />
-        <Stack.Screen name="RegisterUser" component={RegisterUser} options={{ headerShown: false }} />
-        <Stack.Screen name="Register" component={Registercomp} options={{ headerShown: false }} />
+        <Stack.Screen name="RegisterUser" component={RegisterUser} options={{headerShown:false}}/>
+        {/* <Stack.Screen name="InputData"  component={DisplayData} /> */}
+   {/* <Stack.Screen name="Register" component={Registercomp} options={{headerShown:false}}/> */}
         <Stack.Screen name="LoginUser" component={LoginUser} />
-        <Stack.Screen name="InputPage" component={InputPage} />
+          <Stack.Screen name="InputPage" component={InputPage}/> 
         <Stack.Screen name="VendorDetails1" component={VendorDetails1} />
-        <Stack.Screen name="Data" component={Data} />
-        <Stack.Screen name="payment" component={Payment} options={{ headerShown: false }} />
+          <Stack.Screen name = "Data" component={Data}/>
+    <Stack.Screen name= "payment" component={Payment} options={{headerShown:false}}/>
         <Stack.Screen name="pay" component={Pay} />
+        <Stack.Screen name="Register" component={Registercomp} options={{ headerShown: false }} />
+        {/* Add other screens here */}
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
+
+
 
 
 const styles = StyleSheet.create({

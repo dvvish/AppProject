@@ -1,15 +1,29 @@
-import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native';
+import React, { useState, useRef } from 'react';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+} from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
-import { icons } from '../constants';
+ 
+import { icons } from '../constants'; // Replace with your icons file
 
-const LoginUser = async () => {
+const LoginUser = (): React.JSX.Element => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+
+  // Refs to store timeout IDs for debouncing
+  const usernameTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const passwordTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const saveToken = async (token: string) => {
     try {
@@ -19,7 +33,7 @@ const LoginUser = async () => {
       console.error('Failed to save token:', error);
     }
   };
-const data = await AsyncStorage.getItem('vehicleData');
+
   const handleLogin = async () => {
     if (!username || !password) {
       setError('Please fill in all fields.');
@@ -28,17 +42,20 @@ const data = await AsyncStorage.getItem('vehicleData');
 
     setError(null);
     setLoading(true);
- 
+
     try {
       const userData = { username, password };
 
-      const response = await fetch('https://mechbuddy.pythonanywhere.com/api/auth/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
+      const response = await fetch(
+        'https://mechbuddy.pythonanywhere.com/api/auth/login/',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(userData),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -55,14 +72,13 @@ const data = await AsyncStorage.getItem('vehicleData');
       await saveToken(token);
 
       Alert.alert('Success', 'Login successful!');
-if(data){
-  navigation.navigate("payment");
-}
-else{
-  navigation.navigate("InputPage");
-}
-      // Navigate to the home screen or main app screen
-     // navigation.navigate('Home');
+
+      const data = await AsyncStorage.getItem('vehicleData');
+      if (data) {
+        navigation.navigate('payment');
+      } else {
+        navigation.navigate('InputPage');
+      }
     } catch (err) {
       console.error('Error during login:', err);
       setError((err as Error).message || 'An unknown error occurred.');
@@ -71,24 +87,44 @@ else{
     }
   };
 
+  // Debounced input handlers
+  const handleUsernameChange = (value: string) => {
+    if (usernameTimeoutRef.current) {
+      clearTimeout(usernameTimeoutRef.current); // Clear previous timeout
+    }
+    usernameTimeoutRef.current = setTimeout(() => {
+      setUsername(value); // Update state after debounce delay
+    }, 300);
+  };
+
+  const handlePasswordChange = (value: string) => {
+    if (passwordTimeoutRef.current) {
+      clearTimeout(passwordTimeoutRef.current); // Clear previous timeout
+    }
+    passwordTimeoutRef.current = setTimeout(() => {
+      setPassword(value); // Update state after debounce delay
+    }, 300);
+  };
+
   return (
     <View style={styles.container}>
-      <Image source={icons.logo} style={{ width: 200, height: 200, alignSelf: 'center' }} />
+      <Image
+        source={icons.logo}
+        style={{ width: 200, height: 200, alignSelf: 'center' }}
+      />
       <Text style={styles.title}>Login</Text>
       {error && <Text style={styles.error}>{error}</Text>}
       <TextInput
         style={styles.input}
         placeholder="Username"
-        value={username}
-        onChangeText={setUsername}
+        onChangeText={handleUsernameChange}
         placeholderTextColor="#999"
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         secureTextEntry
-        value={password}
-        onChangeText={setPassword}
+        onChangeText={handlePasswordChange}
         placeholderTextColor="#999"
       />
       {loading ? (
@@ -166,3 +202,7 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
+// function debounce(arg0: (value: string) => void, arg1: number): any {
+//   throw new Error('Function not implemented.');
+// }
+
