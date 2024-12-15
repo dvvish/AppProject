@@ -57,7 +57,7 @@ const Registercomp = () => {
   const [isSourceModalVisible, setSourceModalVisible] = useState(false);
   const [policyLink, setPolicyLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
+const [check,setCheck] =useState(false);
   const categoryOptions = ['Designing', 'UI/UX', 'Video Editing'];
   const sourceOptions = ['LinkedIn', 'Instagram', 'WhatsApp', 'Other'];
 
@@ -183,7 +183,7 @@ const Registercomp = () => {
 
         <TextInput
           style={styles.input}
-          placeholder="Whatsapp "
+          placeholder="Whatsapp Number "
           value={username}
           onChangeText={setUsername}
           placeholderTextColor="#999"
@@ -282,10 +282,19 @@ const Registercomp = () => {
           </Text>
         </View>
         {inputErrors.terms && <Text style={styles.errorText}>{inputErrors.terms}</Text>}
-
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Register</Text>
-        </TouchableOpacity>
+{/* The button is added with disable condition*/}
+        <TouchableOpacity
+  style={[
+    styles.button,
+    !isChecked && styles.buttonDisabled, // Apply disabled style if checkbox is not clicked
+  ]}
+  onPress={handleRegister}
+  disabled={!isChecked} // Disable the button if checkbox is not clicked
+>
+  <Text style={styles.buttonText}>Register</Text>
+  <TouchableOpacity/>
+ 
+</TouchableOpacity>
 
         <Modal visible={isCategoryModalVisible} transparent animationType="slide">
           <View style={styles.modalOverlay}>
@@ -339,6 +348,16 @@ const Registercomp = () => {
 // export default Registercomp;
 
 const styles = StyleSheet.create({
+  button: {
+    backgroundColor: '#007BFF', // Active button color
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonDisabled: {
+    backgroundColor: '#CCCCCC', // Colorless button when disabled
+  },
   checkbox: {
     width: 20,
     height: 20,

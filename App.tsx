@@ -77,33 +77,61 @@ const Stack = createNativeStackNavigator();
 // for getting integration of firebase config//
 
 function App(): React.JSX.Element {
- // const [isDataSubmitted, setIsDataSubmitted] = useState(false); // For registration status
-  //const [isPaymentRequired, setIsPaymentRequired] = useState(false); // For payment status
+  const [isUserDataPresent, setIsUserDataPresent] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState(false);
 
-  // Fetch saved data from AsyncStorage
-  // useEffect(() => {
-  //   const checkData = async () => {
-  //     try {
-  //       const userData = await AsyncStorage.getItem('userData');
-  //       setIsDataSubmitted(!!userData); // Set true if userData exists
-  //     } catch (err) {
-  //       console.error('Error fetching data from AsyncStorage:', err);
-  //     }
-  //   };
+  // Fetch user data and payment status
+  const fetchData = async () => {
+    try {
+      const userData = await AsyncStorage.getItem('userData');
+      if (userData) {
+        console.log('User Data:', userData);
+        setIsUserDataPresent(true);
+        console.log(isUserDataPresent);
+      }
+    }
+      catch{
+        console.log('no data');
+      }
+    };
+    const payment = async () => {
+      try {
+        // Fetch payment status from API
+        const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
+        const result = await response.json();
+    
+        if (result.others && typeof result.others.payment !== 'undefined') {
+          setPaymentStatus(result.others.payment);
+          console.log(paymentStatus); // Update payment status with the value of "payment"
+        } else {
+          console.warn('No payment status found in the API.');
+        }
+      } catch (error) {
+        console.error('Error fetching payment status:', error);
+      } finally {
+        setLoading(false); // Stop the loading indicator
+      }
+    };
 
-    // const fetchData = async () => {
-    //   try {
-    //     const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
-    //     const data = await response.json();
-    //     setIsPaymentRequired(!data?.others?.payment); // Set true if payment is false
-    //   } catch (err) {
-    //     console.error('Error fetching API data:', err);
-    //   }
-    // };
-
-    // checkData();
-    //fetchData();
-  
+    const register = async () => {
+      try {
+        // Fetch payment status from API
+        const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
+        const result = await response.json();
+    
+        if (result.others && typeof result.others.register !== 'undefined') {
+          setIsUserDataPresent(result.others.register);
+          console.log(isUserDataPresent); // Update payment status with the value of "payment"
+        } else {
+          console.warn('No payment status found in the API.');
+        }
+      } catch (error) {
+        console.error('Error fetching payment status:', error);
+      } finally {
+        setLoading(false); // Stop the loading indicator
+      }
+    };
+    
 
   const handlePaymentButton = async (navigation: any) => {
     try {
@@ -122,11 +150,10 @@ function App(): React.JSX.Element {
     try {
       const token = await AsyncStorage.getItem('authToken'); // Replace 'authToken' with your actual key
       if (token) {
-        console.log(token);
-        // Navigate to pay screen if token exists
+        console.log('Token:', token);
+        // fetchData();
         navigation.navigate('pay');
       } else {
-        // Navigate to Register screen if no token
         navigation.navigate('Register');
       }
     } catch (error) {
@@ -134,6 +161,12 @@ function App(): React.JSX.Element {
       navigation.navigate('Register');
     }
   };
+
+  useEffect(() => {
+     fetchData();
+    payment();
+    //register();
+  }, []);
 
   return (
     <NavigationContainer>
@@ -155,8 +188,8 @@ function App(): React.JSX.Element {
                     <Image
                       source={require('./assets/icons/logo.png')}
                       style={{
-                        width: 50,
-                        height: 50,
+                        width: 60,
+                        height: 60,
                         resizeMode: 'contain',
                       }}
                     />
@@ -174,9 +207,10 @@ function App(): React.JSX.Element {
                     <Image
                       source={require('./assets/icons/wheel.png')}
                       style={{
-                        top: 10,
-                        width: 40,
-                        height: 40,
+                        top: 11,
+                        width: 30,
+                        height: 30,
+                        //tintColor: '#ff3131',
                       }}
                     />
                   </TouchableOpacity>
@@ -211,16 +245,22 @@ function App(): React.JSX.Element {
                     <ImageComponent />
                   </TouchableOpacity>
                 </View>
+                
+{/* this is the button */}
+<View style={styles.container}>
+  {/* if both are true than does not show the button  */}
+                  {/* Button appears if user data is present and payment is false */}
+                  {isUserDataPresent === true && paymentStatus===false && (
+                    <TouchableOpacity
+                      style={styles.button}
+                      onPress={() => navigation.navigate('pay')}
+                    >
+                      <Text style={styles.buttonText}>Complete Your Payment</Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
 
-                {/* Conditional Button */}
-                {/* {isDataSubmitted &&   (
-                  <View style={{ padding: 10, backgroundColor: '#ffffff' }}>
-                    <Button
-                      title="Go to Payment and complete your registration"
-                      onPress={() => handlePaymentButton(navigation)}
-                    />
-                  </View>
-                )} */}
+                 
 
                 {/* Buttons Section */}
                 <View>
@@ -277,6 +317,11 @@ function App(): React.JSX.Element {
 
 
 const styles = StyleSheet.create({
+
+
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+  button: { backgroundColor: '#007BFF', padding: 15, borderRadius: 5 },
+  buttonText: { color: '#FFFFFF', fontWeight: 'bold' },
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
@@ -389,3 +434,7 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+function setLoading(arg0: boolean) {
+  throw new Error('Function not implemented.');
+}

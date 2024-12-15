@@ -4,18 +4,18 @@ import { View, Image, StyleSheet, TouchableOpacity } from 'react-native';
  
 
 const ImageComponent: React.FC = () => {
-  useEffect(() => {
-    const checkData = async () => {
-      try {
-        const userData = await AsyncStorage.getItem('userData');
-        setIsDataSubmitted(!!userData); // Set true if userData exists
-      } catch (err) {
-        console.error('Error fetching data from AsyncStorage:', err);
-      }
-    };
+  // useEffect(() => {
+  //   const checkData = async () => {
+  //     try {
+  //       const userData = await AsyncStorage.getItem('userData');
+  //       setIsDataSubmitted(!!userData); // Set true if userData exists
+  //     } catch (err) {
+  //       console.error('Error fetching data from AsyncStorage:', err);
+  //     }
+  //   };
 
-    checkData();
-  }, []);
+  //   checkData();
+  // }, []);
 
   return (
     

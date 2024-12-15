@@ -89,18 +89,20 @@ const Pay = (): React.JSX.Element => {
         navigation.navigate('Register'); // Redirect to registration if no token is found
         return;
       }
-
+      const _data = JSON.stringify({ utr: utr });
+      console.log("sending Data " + _data);
       const response = await fetch('https://mechbuddy.pythonanywhere.com/api/register-transaction/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: "Token " + token, // Include the token in the Authorization header
         },
-        body: JSON.stringify({ utr: utr }),
+        body: _data
       });
 
       if (response.ok) {
         const result = await response.json();
+        console.log(response);
         Alert.alert('Success', result.message);
         navigation.navigate('Home');
         setUtr('');
@@ -142,17 +144,10 @@ const Pay = (): React.JSX.Element => {
             </View>
           )}
           <Text style={styles.qrText}>*Scan this QR for Payment</Text>
-          <Text
-            style={{
-              fontSize: 20,
-              alignItems: 'center',
-              textAlign: 'center',
-              marginTop: -10,
-            }}
-          >
-            Rs : 249/-
-          </Text>
-
+           
+      <Text style={styles.oldPrice}>Rs : 249/-</Text>
+      <Text style={styles.currentPrice}>Rs : 199/-</Text>
+      <Text  style={styles.nrText}>*For first 100 registration</Text>
           {userData && (
             <View  >
               <Text >User Information</Text>
@@ -203,6 +198,19 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: '#fff',
   },
+  currentPrice: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: 'black',
+    textAlign:'center',
+    marginRight: 5,
+  },
+  oldPrice: {
+    textAlign:'center',
+    fontSize: 22,
+    color: 'grey',
+    textDecorationLine: 'line-through',
+  },
   qrContainer: {
     alignItems: 'center',
     marginBottom: 20,
@@ -213,6 +221,13 @@ const styles = StyleSheet.create({
     resizeMode: 'contain',
   },
   qrText: {
+    marginTop:-22,
+    textAlign: 'center',
+    marginBottom: 10,
+    fontWeight: 'bold',
+  },
+  nrText:{
+    fontSize:10,
     textAlign: 'center',
     marginBottom: 20,
     fontWeight: 'bold',
