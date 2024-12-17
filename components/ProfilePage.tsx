@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Platform } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity, ScrollView, Platform, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import App from '../App';
@@ -10,59 +10,44 @@ import Cart from './cart';
 import ComingSoon from './comingsoon';
 import LoginUser from '../Api/LoginUser';
 import RegisterUser from '../Api/RegisterUser';
+import Data from './Data';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // import { router } from 'expo-router';
 // import { signOut } from 'firebase/auth';
 // import { auth } from '@/app/(auth)/firebaseConfig'; // Your Firebase configuration file
 
-const ProfilePage = () => {
-    const navigation = useNavigation();
+ 
 
-    const handleBackPress = () => {
-       navigation.goBack();
-    };
+const ProfilePage = ({ navigation }) => {
+    const [userData, setUserData] = useState(null);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const data = await AsyncStorage.getItem('userData'); // Replace 'userData' with your key
+                if (data) {
+                    setUserData(JSON.parse(data)); // Parse JSON data if stored as a string
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const handleHomePress = () => {
         navigation.goBack();
     };
 
     const handleIntroScreenPress = () => {
-        navigation.navigate(IntroScreen);
+        navigation.navigate('Data'); // Ensure 'Data' is correctly defined in your navigation stack
     };
-
-    // const handleLogout = async () => {
-    //     try {
-    //         await signOut(auth); // Sign out the user from Firebase
-    //         router.push('/(auth)/RegisterUser'); // Redirect to the RegisterUser screen
-    //     } catch (error) {
-    //         console.error("Error signing out:", error);
-    //     }
-    // };
 
     return (
         <SafeAreaView>
             <ScrollView contentContainerStyle={styles.container}>
-                {/* Back Button */}
-                {/* <TouchableOpacity
-                    onPress={handleBackPress}
-                    style={{
-                        position: 'absolute',
-                        top: Platform.OS === 'ios' ? 10 : 30,
-                        left: 10,
-                        zIndex: 10,
-                        padding: 5,
-                    }}
-                >
-                    <Image
-                        source={{ uri: 'https://cdn-icons-png.flaticon.com/128/271/271220.png' }}
-                        style={{
-                            width: 10,
-                            height: 10,
-                            padding: 10,
-                        }}
-                    />
-                </TouchableOpacity> */}
-
                 {/* Gear Icon for Intro Screen */}
                 <TouchableOpacity
                     onPress={handleIntroScreenPress}
@@ -112,18 +97,38 @@ const ProfilePage = () => {
                 </View>
 
                 <View style={styles.body}>
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate(LoginUser)}>
+                    {/* Updated My Profile Section */}
+                    <TouchableOpacity
+                        style={styles.section}
+                        onPress={() => {
+                            if (userData) {
+                                Alert.alert('Profile Details', `Name: ${userData.name}\nEmail: ${userData.email}`);
+                            } else {
+                                navigation.navigate('LoginUser');
+                            }
+                        }}
+                    >
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/3135/3135715.png' }}
                             style={styles.iconImage}
                         />
                         <View>
-                            <Text style={styles.sectionTitle}>My Profile</Text>
-                            <Text style={styles.sectionDescription}>View and edit your profile details</Text>
+                            {userData ? (
+                                <>
+                                    <Text style={styles.sectionTitle}>Welcome, {userData.username}</Text>
+                                    <Text style={styles.sectionDescription}>View and edit your profile details</Text>
+                                </>
+                            ) : (
+                                <>
+                                    <Text style={styles.sectionTitle}>My Profile</Text>
+                                    <Text style={styles.sectionDescription}>Log in to access your profile</Text>
+                                </>
+                            )}
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate(Servicing)}>
+                    {/* Services Section */}
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('Servicing')}>
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/11515/11515286.png' }}
                             style={styles.iconImage}
@@ -134,7 +139,8 @@ const ProfilePage = () => {
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate(VendorList)}>
+                    {/* Vendors Section */}
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('VendorList')}>
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/10951/10951894.png' }}
                             style={styles.iconImage}
@@ -145,18 +151,8 @@ const ProfilePage = () => {
                         </View>
                     </TouchableOpacity>
 
-                    {/* <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('rewards')}>
-                        <Image
-                            source={{ uri: 'https://cdn-icons-png.flaticon.com/128/3179/3179668.png' }}
-                            style={styles.iconImage}
-                        />
-                        <View>
-                            <Text style={styles.sectionTitle}>Rewards</Text>
-                            <Text style={styles.sectionDescription}>Check your rewards and points</Text>
-                        </View>
-                    </TouchableOpacity> */}
-
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate(Cart)}>
+                    {/* Cart Section */}
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('Cart')}>
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/14985/14985858.png' }}
                             style={styles.iconImage}
@@ -166,8 +162,9 @@ const ProfilePage = () => {
                             <Text style={styles.sectionDescription}>View items in your cart</Text>
                         </View>
                     </TouchableOpacity>
-                    {/*Notification should be left to added*/ }
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate(ComingSoon)}>
+
+                    {/* Notifications Section */}
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('ComingSoon')}>
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/3541/3541850.png' }}
                             style={styles.iconImage}
@@ -178,7 +175,8 @@ const ProfilePage = () => {
                         </View>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate(ComingSoon)}>
+                    {/* Contact Section */}
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('Contact')}>
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/724/724664.png' }}
                             style={styles.iconImage}
@@ -188,23 +186,13 @@ const ProfilePage = () => {
                             <Text style={styles.sectionDescription}>Get in touch with us</Text>
                         </View>
                     </TouchableOpacity>
-
-                    {/* Logout Option */}
-                    {/* <TouchableOpacity style={styles.section} onPress={handleLogout}>
-                        <Image
-                            source={{ uri: 'https://cdn-icons-png.flaticon.com/128/10337/10337572.png' }}
-                            style={styles.iconImage}
-                        />
-                        <View>
-                            <Text style={styles.sectionTitle}>Logout</Text>
-                            <Text style={styles.sectionDescription}>Log out of your account</Text>
-                        </View>
-                    </TouchableOpacity> */}
                 </View>
             </ScrollView>
         </SafeAreaView>
     );
 };
+
+ 
 
 const styles = StyleSheet.create({
     container: {

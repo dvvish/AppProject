@@ -111,7 +111,7 @@ const service = () => {
 
 const styles = StyleSheet.create({
   container: {
-    width: '99%',
+    width: '105%',
     padding: 20,
     backgroundColor: '#fff',
     borderRadius: 10,
@@ -121,32 +121,40 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
+    marginRight:10,
     fontWeight: 'bold',
-    marginBottom: 15,
+    marginBottom: 10,
     color: '#333',
     textAlign: 'center',
-    paddingBottom:10,
+    padding:20,
   },
   scrollView: {
     marginBottom: 5,
   },
   card: {
-    width: 148,
-    height:160,
+    width: 140,
+    height: 150,
     marginRight: 20,
     padding: 15,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#f7f5f0',
-    // shadowColor: '#000',
-     shadowOffset: { width: 0, height: 1 },
-   // shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
-    alignItems: 'center',
     
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 2, // Clear, uniform border width
+    
+
+     // Adjust width to fit 2 cards per row with spacing
+        marginBottom: 20, // Spacing between rows
+        backgroundColor: '#fff',
+        borderRadius: 18,
+        elevation: 3,
+    borderColor: '#fcfcfc', // Glowing border color (light blue)
+    shadowColor: '#4A90E2', // Glow effect color
+    shadowOffset: { width: 0, height: 0 }, // Even shadow on all sides
+    shadowRadius: 10, // Glow intensity
+    shadowOpacity: 0.5,
   },
+  
+
   icon: {
     width: 60,
     height: 60,

@@ -71,11 +71,10 @@ const Modifications = () => {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 25,
+       padding:20,
         backgroundColor: '#fff',
     },
     sectionTitle: {
-        
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 10,
@@ -89,13 +88,19 @@ const styles = StyleSheet.create({
         justifyContent: 'space-between', // Add spacing between cards
     },
     card: {
-        width: '45%', // Adjust width to fit 2 cards per row with spacing
+        width: '46%', // Adjust width to fit 2 cards per row with spacing
         marginBottom: 20, // Spacing between rows
         padding: 10,
         backgroundColor: '#fff',
         borderRadius: 8,
-        elevation: 3,
+        elevation: 6,
         alignItems: 'center',
+        borderWidth: 2, // Uniform border width
+    borderColor: '#fcfcfc', // Glowing border color (light blue)
+    shadowColor: '#4A90E2', // Glow effect color
+    // Even shadow on all sides
+    shadowRadius: 10, // Glow intensity
+    shadowOpacity: 0.5,
     },
     icon: {
         width: 40,

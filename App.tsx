@@ -13,6 +13,7 @@ import {
   FlatList,
   Button,
   Alert,
+  Linking,
 } from 'react-native';
 import { RootStackParamList } from './types';
 import ComingSoon from './components/comingsoon';
@@ -49,6 +50,7 @@ import Registercomp from './components/Registercomp';
 import ImageComponent from './components/ImageComponent';
 import Pay from './components/Pay';
 import { useHandler } from 'react-native-reanimated';
+import ContactPage from './components/ContactPage';
 //import { icons } from './constants';
 
  
@@ -79,14 +81,14 @@ const Stack = createNativeStackNavigator();
 function App(): React.JSX.Element {
   const [isUserDataPresent, setIsUserDataPresent] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(false);
-
+const [policyLink, setPolicyLink] = useState<string | null>(null);
   // Fetch user data and payment status
   const fetchData = async () => {
     try {
       const userData = await AsyncStorage.getItem('userData');
       if (userData) {
         console.log('User Data:', userData);
-        setIsUserDataPresent(true);
+       // setIsUserDataPresent(true);
         console.log(isUserDataPresent);
       }
     }
@@ -112,6 +114,21 @@ function App(): React.JSX.Element {
         setLoading(false); // Stop the loading indicator
       }
     };
+    useEffect(() => {
+        const fetchPolicyLink = async () => {
+          try {
+            const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
+            const result = await response.json();
+            if (result.others?.policy) {
+              setPolicyLink(result.others.policy);
+            }
+          } catch (error) {
+            console.error('Error fetching policy link:', error);
+          }
+        };
+    
+        fetchPolicyLink();
+      }, []);
 
     const register = async () => {
       try {
@@ -163,9 +180,9 @@ function App(): React.JSX.Element {
   };
 
   useEffect(() => {
-     fetchData();
+    // fetchData();
     payment();
-    //register();
+    register();
   }, []);
 
   return (
@@ -250,14 +267,15 @@ function App(): React.JSX.Element {
 <View style={styles.container}>
   {/* if both are true than does not show the button  */}
                   {/* Button appears if user data is present and payment is false */}
-                  {isUserDataPresent === true && paymentStatus===false && (
+                   
+                   {/* For */}
                     <TouchableOpacity
                       style={styles.button}
-                      onPress={() => navigation.navigate('pay')}
+                      onPress={() => policyLink && Linking.openURL(policyLink)}
                     >
-                      <Text style={styles.buttonText}>Complete Your Payment</Text>
+                      <Text style={styles.buttonText}>Click here to view the rules </Text>
                     </TouchableOpacity>
-                  )}
+                
                 </View>
 
                  
@@ -308,6 +326,7 @@ function App(): React.JSX.Element {
         <Stack.Screen name="pay" component={Pay} />
         <Stack.Screen name="Register" component={Registercomp} options={{ headerShown: false }} />
         {/* Add other screens here */}
+        <Stack.Screen name ="Contact" component={ContactPage}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -320,8 +339,8 @@ const styles = StyleSheet.create({
 
 
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
-  button: { backgroundColor: '#007BFF', padding: 15, borderRadius: 5 },
-  buttonText: { color: '#FFFFFF', fontWeight: 'bold' },
+  button: { backgroundColor:  '#ff3131', padding: 10, borderRadius: 5 },
+  buttonText: { color: 'black', fontWeight: 'bold' ,alignItems:'center',textAlign:'center',fontSize:15 },
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
