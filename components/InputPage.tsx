@@ -1,17 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
+  StyleSheet,
   Modal,
   FlatList,
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import Data from './Data';
+import { useNavigation } from '@react-navigation/native';
 
 const InputPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -29,7 +28,6 @@ const InputPage = () => {
 
   const navigation = useNavigation();
 
-  // Fetch companies based on selected category
   const fetchCompanies = async (category: string) => {
     setLoading(true);
     try {
@@ -48,7 +46,6 @@ const InputPage = () => {
     }
   };
 
-  // Fetch models based on selected company and category
   const fetchModels = async (companyId: string) => {
     if (!companyId || !selectedCategory) return;
     setLoading(true);
@@ -79,10 +76,10 @@ const InputPage = () => {
   };
 
   const handleCompanySelect = (company: { id: string; name: string }) => {
-    setSelectedCompany(company); // Store both id and name
+    setSelectedCompany(company);
     setSelectedModel(null);
     setSelectedFuelType(null);
-    fetchModels(company.id); // Pass the id to fetch models
+    fetchModels(company.id);
   };
 
   const handleModalOpen = (field: string) => {
@@ -99,7 +96,7 @@ const InputPage = () => {
     if (currentField === 'category') {
       handleCategorySelect(item.id);
     } else if (currentField === 'company') {
-      handleCompanySelect({ id: item.id, name: item.name }); // Pass both id and name
+      handleCompanySelect({ id: item.id, name: item.name });
     } else if (currentField === 'model') {
       setSelectedModel(item.name);
     } else if (currentField === 'fuelType') {
@@ -116,11 +113,11 @@ const InputPage = () => {
         { id: 'four', name: 'Four Wheeler' },
       ];
     } else if (currentField === 'company') {
-      data = companies.map((item: any) => ({ id: item.id, name: item.name })); // Keep id and name
+      data = companies.map((item: any) => ({ id: item.id, name: item.name }));
     } else if (currentField === 'model') {
       data = models.map((item: any) => ({ id: item.id, name: item.name }));
     } else if (currentField === 'fuelType') {
-      data = fuelTypes.map((fuel) => ({ id: fuel, name: fuel })); // Treat fuel types as strings
+      data = fuelTypes.map((fuel) => ({ id: fuel, name: fuel }));
     }
 
     return (
@@ -147,49 +144,36 @@ const InputPage = () => {
 
     const inputData = {
       category: selectedCategory,
-      companyId: selectedCompany.id, // Pass the company ID
-      companyName: selectedCompany.name, // Optional, if needed
+      companyId: selectedCompany.id,
+      companyName: selectedCompany.name,
       model: selectedModel,
       fuelType: selectedFuelType,
     };
+
     try {
-      // Retrieve existing data
       const existingData = await AsyncStorage.getItem('vehicleData');
       const parsedData = existingData ? JSON.parse(existingData) : [];
-  
-      // Append new data
       const updatedData = [...parsedData, inputData];
       await AsyncStorage.setItem('vehicleData', JSON.stringify(updatedData));
-      // const storedData = await AsyncStorage.getItem('vehicleData');
-      // if(storedData){
-      //   console.log(storedData);
-      //   navigation.navigate('Data');
-      // }
-      // Navigate to the Data page
-      navigation.navigate(Data, { inputData });
+      navigation.navigate('Data', { inputData });
     } catch (error) {
       console.error('Error saving data', error);
     }
-
-    
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Vehicle Details</Text>
-
       <TouchableOpacity
         style={styles.fieldContainer}
         onPress={() => handleModalOpen('category')}
       >
-        
         <Text style={styles.fieldText}>
           {selectedCategory
             ? `Category: ${selectedCategory === 'two' ? 'Two Wheeler' : 'Four Wheeler'}`
             : 'Select Category'}
         </Text>
       </TouchableOpacity>
-
       <TouchableOpacity
         style={styles.fieldContainer}
         onPress={() => handleModalOpen('company')}
@@ -199,7 +183,6 @@ const InputPage = () => {
           {selectedCompany ? selectedCompany.name : 'Select Company'}
         </Text>
       </TouchableOpacity>
-
       <TouchableOpacity
         style={styles.fieldContainer}
         onPress={() => handleModalOpen('model')}
@@ -209,7 +192,6 @@ const InputPage = () => {
           {selectedModel || 'Select Model'}
         </Text>
       </TouchableOpacity>
-
       <TouchableOpacity
         style={styles.fieldContainer}
         onPress={() => handleModalOpen('fuelType')}
@@ -219,11 +201,9 @@ const InputPage = () => {
           {selectedFuelType || 'Select Fuel Type'}
         </Text>
       </TouchableOpacity>
-
       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitButtonText}>Submit</Text>
       </TouchableOpacity>
-
       <Modal visible={modalVisible} animationType="slide" onRequestClose={handleModalClose}>
         <View style={styles.modalContainer}>
           {loading ? (
@@ -250,13 +230,15 @@ const styles = StyleSheet.create({
   },
   fieldText: { fontSize: 16, color: '#555' },
   submitButton: {
+    marginTop:20,
+    padding:20,
     backgroundColor: '#ff3131',
-    paddingVertical: 15,
-    borderRadius: 8,
+    paddingVertical: 13,
+    borderRadius: 28,
     alignItems: 'center',
   },
   submitButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-  modalContainer: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  modalContainer: { flex: 1, padding: 10, backgroundColor: '#fff' },
   modalItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#ccc' },
   modalItemText: { fontSize: 16 },
 });

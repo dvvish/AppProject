@@ -1,17 +1,20 @@
-// VendorList.tsx
-import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../types'; // Import the types
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from 'react-native';
 import { icons } from '../constants';
-
-type VendorListProps = NativeStackScreenProps<RootStackParamList, 'VendorList'>;
+import StarRating, { StarRatingDisplay } from 'react-native-star-rating-widget';
 
 const VendorList: React.FC<VendorListProps> = ({ navigation }) => {
   const [vendors, setVendors] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch vendor data from API
   useEffect(() => {
     const fetchVendors = async () => {
       try {
@@ -31,10 +34,8 @@ const VendorList: React.FC<VendorListProps> = ({ navigation }) => {
     fetchVendors();
   }, []);
 
-  // Navigate to VendorDetails
   const handlePress = (id: string): void => {
-    console.log("---------------------------------------------------------");
-    navigation.navigate('VendorDetails', { vendorId: id }); // Passing vendorId to the next screen
+    navigation.navigate('VendorDetails', { vendorId: id });
   };
 
   if (loading) {
@@ -50,21 +51,43 @@ const VendorList: React.FC<VendorListProps> = ({ navigation }) => {
     <View style={styles.container}>
       <FlatList
         data={vendors}
-        keyExtractor={(item) => item.id.toString()} // Assuming id is a unique identifier
+        keyExtractor={(item) => item.id.toString()}
         renderItem={({ item }) => {
           const imageUrl = item.logo
             ? { uri: `https://mechbuddy.pythonanywhere.com${item.logo}` }
-          
             : icons.logo;
 
           return (
             <TouchableOpacity style={styles.vendorItem} onPress={() => handlePress(item.id)}>
+              {/* Badge for Each List Item */}
+              <View style={styles.badgeContainer}>
+                <Text style={styles.badgeText}>Top Vendor</Text>
+              </View>
+
               <Image source={imageUrl} style={styles.vendorImage} />
               <View style={styles.vendorInfo}>
                 <Text style={styles.vendorName}>{item.name}</Text>
                 <Text style={styles.vendorDescription}>
                   {item.aboutus || 'No description available.'}
                 </Text>
+                {/* 5-Star Rating */}
+                <View style={styles.ratingContainer}>
+                  {[...Array(5)].map((_, index) => (
+                    <Image
+                      key={index}
+                      source={require('../assets/icons/star.png')}
+                      style={styles.starIcon}
+                    />
+                  ))}
+                </View>
+                <View style={styles.iconRow}>
+                  <TouchableOpacity>
+                    <Image source={require('../assets/icons/point.png')} style={styles.icon} />
+                  </TouchableOpacity>
+                  <TouchableOpacity>
+                    <Image source={require('../assets/icons/phone.png')} style={styles.icon1} />
+                  </TouchableOpacity>
+                </View>
               </View>
             </TouchableOpacity>
           );
@@ -92,22 +115,38 @@ const styles = StyleSheet.create({
     color: '#555',
   },
   listContent: {
-    paddingVertical: 10,
+    paddingVertical: 20,
   },
   vendorItem: {
     flexDirection: 'row',
     backgroundColor: '#FFF',
     padding: 15,
     borderRadius: 15,
-    marginBottom: 15,
+    marginBottom: 13,
     elevation: 5,
     shadowColor: '#000',
     margin: 4,
+    position: 'relative', // To position the badge properly
+  },
+  badgeContainer: {
+    position: 'absolute',
+    top: -10,
+    left: -10,
+    backgroundColor: '#FFD700',
+    borderRadius: 10,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    zIndex: 1,
+  },
+  badgeText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#333',
   },
   vendorImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 80,
+    height: 90,
+    borderRadius: 10,
     marginRight: 15,
     backgroundColor: '#f0f0f0',
   },
@@ -116,14 +155,42 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   vendorName: {
-    fontSize: 16,
+    textAlign: 'center',
+    fontSize: 19,
     fontWeight: 'bold',
     marginBottom: 5,
     color: '#333',
   },
   vendorDescription: {
-    fontSize: 14,
+    textAlign: 'center',
+    fontSize: 13,
     color: '#666',
+    marginBottom: 10,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: -27,
+  },
+  starIcon: {
+    width: 15,
+    height: 15,
+    marginHorizontal: 2,
+  },
+  iconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  icon1: {
+    width: 18,
+    height: 18,
+    marginLeft: 13,
+  },
+  icon: {
+    width: 18,
+    height: 18,
+    marginLeft: 160,
   },
 });
 

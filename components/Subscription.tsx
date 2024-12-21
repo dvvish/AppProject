@@ -12,6 +12,7 @@ const subscriptionPlans = [
     description: "For Light Riders (Up to 12,000 km annually)",
     icon: "https://cdn-icons-png.flaticon.com/128/2921/2921203.png",
     Number: "3",
+    price:'1200',
     Duration: "1 Year",
     Service: "Every 4 months",
     ServicesIncluded: "Engine oil and oil filter replacement (at every service).",
@@ -23,6 +24,7 @@ const subscriptionPlans = [
     description: "For Moderate Riders (12,000 to 18,000 km annually)",
     icon: "https://cdn-icons-png.flaticon.com/128/2921/2921225.png",
     Number: "3",
+    price:'1600',
     Duration: "1 Year",
     Service: "Every 4 months",
     ServicesIncluded: "Engine oil and oil filter replacement (at every service).",
@@ -34,6 +36,7 @@ const subscriptionPlans = [
     description: "For Every 12 months and 20000km.",
     icon: "https://cdn-icons-png.flaticon.com/128/2921/2921210.png",
     Number: "3",
+    price:"2000",
     Duration: "1 Year",
     Service: "Every 4 months",
     ServicesIncluded: "Engine oil and oil filter replacement (at every service).",
@@ -81,7 +84,7 @@ const Subscription: React.FC = async () => {
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "#F5F5F5" }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#FFF" }}>
       <View>
         <Text style={styles.title}>Subscription Plans</Text>
 
@@ -94,6 +97,7 @@ const Subscription: React.FC = async () => {
               <View style={styles.planDetails}>
                 <Text style={styles.planName}>{item.name}</Text>
                 <Text style={styles.planDescription}>{item.description}</Text>
+                <Text style={styles.planName}>Rupees : {item.price}/-</Text>
                 <TouchableOpacity
                   style={styles.subscribeButton}
                   onPress={() => handleSubscribe(item.id)}

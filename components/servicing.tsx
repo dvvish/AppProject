@@ -72,7 +72,7 @@ const Servicing: React.FC = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View>
-          <Text style={styles.heading}>Select a Service</Text>
+          {/* <Text style={styles.heading}>Select a Service</Text> */}
         </View>
         <View style={styles.gridContainer}>
           {services.map((service, index) => (

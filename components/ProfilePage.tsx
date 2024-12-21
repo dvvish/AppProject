@@ -36,6 +36,19 @@ const ProfilePage = ({ navigation }) => {
 
         fetchUserData();
     }, []);
+    const fetchuser = async () => {
+        try {
+            const data2 = await AsyncStorage.getItem('Token'); // Replace 'userData' with your key
+            if (data2) {
+                 navigation.navigate("Profile"); // Parse JSON data if stored as a string
+            }
+            else{
+                navigation.navigate('LoginUser');
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
 
     const handleHomePress = () => {
         navigation.goBack();
@@ -100,13 +113,9 @@ const ProfilePage = ({ navigation }) => {
                     {/* Updated My Profile Section */}
                     <TouchableOpacity
                         style={styles.section}
-                        onPress={() => {
-                            if (userData) {
-                                Alert.alert('Profile Details', `Name: ${userData.name}\nEmail: ${userData.email}`);
-                            } else {
-                                navigation.navigate('LoginUser');
-                            }
-                        }}
+                        onPress={ 
+                           fetchuser
+                        }
                     >
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/3135/3135715.png' }}
@@ -184,6 +193,18 @@ const ProfilePage = ({ navigation }) => {
                         <View>
                             <Text style={styles.sectionTitle}>Contact</Text>
                             <Text style={styles.sectionDescription}>Get in touch with us</Text>
+                        </View>
+                    </TouchableOpacity>
+
+                    {/*  */}
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('Data')}>
+                        <Image
+                            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/3418/3418139.png' }}
+                            style={styles.iconImage}
+                        />
+                        <View>
+                            <Text style={styles.sectionTitle}>Vehicle Data </Text>
+                            <Text style={styles.sectionDescription}>View your selected vehicle </Text>
                         </View>
                     </TouchableOpacity>
                 </View>

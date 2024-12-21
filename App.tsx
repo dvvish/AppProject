@@ -14,6 +14,7 @@ import {
   Button,
   Alert,
   Linking,
+  PermissionsAndroid,
 } from 'react-native';
 import { RootStackParamList } from './types';
 import ComingSoon from './components/comingsoon';
@@ -51,6 +52,10 @@ import ImageComponent from './components/ImageComponent';
 import Pay from './components/Pay';
 import { useHandler } from 'react-native-reanimated';
 import ContactPage from './components/ContactPage';
+import Account from './components/Account';
+import Profile from './components/Profile';
+import Subscription from './components/Subscription';
+import LocationPermissionPage from './components/LocationPermissionPage';
 //import { icons } from './constants';
 
  
@@ -149,7 +154,40 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
       }
     };
     
-
+    const requestPermission = async () => {
+      if (Platform.OS === 'android') {
+        const granted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Access Permission',
+            message: 'This app needs access to your location to function properly.',
+            buttonNeutral: 'Ask Me Later',
+            buttonNegative: 'Cancel',
+            buttonPositive: 'OK',
+          }
+        );
+  
+        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+          Alert.alert('Permission Granted', 'You can access location services.');
+        } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
+          Alert.alert('Permission Denied', 'Location permission was denied.');
+        } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
+          Alert.alert(
+            'Permission Blocked',
+            'You chose "Never Ask Again." Enable permissions manually in settings.'
+          );
+        }
+      } else {
+        Alert.alert(
+          'iOS Permission',
+          'iOS will automatically handle location permissions when needed.'
+        );
+      }
+    };
+  
+    useEffect(() => {
+      requestPermission();
+    }, []);
   const handlePaymentButton = async (navigation: any) => {
     try {
       const isPaid = await AsyncStorage.getItem('ispaid');
@@ -230,6 +268,16 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                         //tintColor: '#ff3131',
                       }}
                     />
+                    <Image
+                      source={ {uri:'https://cdn-icons-png.flaticon.com/512/32/32563.png'}}
+                      style={{
+                        top: -25,
+                        width: 13,
+                        marginLeft:22,
+                        height: 13,
+                        //tintColor: '#ff3131',
+                      }}
+                    />
                   </TouchableOpacity>
 
                   <TouchableOpacity
@@ -277,27 +325,36 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                     </TouchableOpacity>
                 
                 </View>
-
+                  
                  
+<View style={styles.divider}>
 
+</View>
                 {/* Buttons Section */}
                 <View>
                   <Service />
                 </View>
 
+                <View style={styles.divider}>
+
+</View>
+
                 <View>
                   <Modifications />
                 </View>
-
+                 
                 <View style={styles.divider}></View>
                 <View style={{ paddingTop: 15, paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
                   {/* Modification Services Heading */}
                   <View></View>
                 </View>
-
+ 
                 <View>
-                  <SliderReel />
+                <Subscription/>
+
                 </View>
+                 
+
               </ScrollView>
             </SafeAreaView>
           )}
@@ -327,6 +384,8 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
         <Stack.Screen name="Register" component={Registercomp} options={{ headerShown: false }} />
         {/* Add other screens here */}
         <Stack.Screen name ="Contact" component={ContactPage}/>
+        <Stack.Screen name ="Profile" component={ Profile} options={{headerShown :false}}/>
+        <Stack.Screen name ="Location" component={ LocationPermissionPage} options={{headerShown :false}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -338,7 +397,7 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
 const styles = StyleSheet.create({
 
 
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 20 },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
   button: { backgroundColor:  '#ff3131', padding: 10, borderRadius: 5 },
   buttonText: { color: 'black', fontWeight: 'bold' ,alignItems:'center',textAlign:'center',fontSize:15 },
   container: {

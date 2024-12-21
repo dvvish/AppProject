@@ -14,6 +14,7 @@ import { useNavigation } from '@react-navigation/native';
  
 import { icons } from '../constants'; // Replace with your icons file
 
+ 
 const LoginUser = (): React.JSX.Element => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -31,6 +32,15 @@ const LoginUser = (): React.JSX.Element => {
       console.log('Token saved successfully');
     } catch (error) {
       console.error('Failed to save token:', error);
+    }
+  };
+
+  const saveProfile = async (profile: any) => {
+    try {
+      await AsyncStorage.setItem('Profile', JSON.stringify(profile));
+      console.log('Profile saved successfully');
+    } catch (error) {
+      console.error('Failed to save profile:', error);
     }
   };
 
@@ -62,14 +72,19 @@ const LoginUser = (): React.JSX.Element => {
         throw new Error(errorData.message || 'Invalid username or password.');
       }
 
-      const { token } = await response.json();
+      // Parse response JSON safely
+      const responseData = await response.json();
+      console.log('Login Response:', responseData);
 
-      if (!token) {
-        throw new Error('Token not received from the server.');
+      const { token, profile } = responseData;
+
+      if (!token || !profile) {
+        throw new Error('Token or profile not received from the server.');
       }
 
-      // Save the token to AsyncStorage
+      // Save the token and profile to AsyncStorage
       await saveToken(token);
+      await saveProfile(profile);
 
       Alert.alert('Success', 'Login successful!');
 
@@ -146,6 +161,9 @@ const LoginUser = (): React.JSX.Element => {
     </View>
   );
 };
+
+ 
+
 
 export default LoginUser;
 

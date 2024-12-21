@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, FlatList, Image, Dimensions, StyleSheet, TouchableOpacity, ActivityIndicator, Text } from 'react-native';
+import { View, FlatList, Image, Dimensions, StyleSheet, TouchableOpacity, ActivityIndicator, Text, Animated } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -31,6 +31,8 @@ const Carousel = () => {
 
   return (
     <View style={styles.container}>
+     
+            
       <FlatList
         ref={flatListRef}
         data={data}
@@ -47,6 +49,7 @@ const Carousel = () => {
         viewabilityConfig={viewabilityConfig}
       />
       <View style={styles.tabContainer}>
+       
         {data.map((_, index) => (
           <TouchableOpacity key={index} onPress={() => scrollToIndex(index)}>
             <View style={[styles.tab, currentIndex === index && styles.tabActive]} />
