@@ -146,6 +146,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 16,
     backgroundColor: '#fff',
+    marginTop:-15,
   },
   title: {
     fontSize: 28,
@@ -153,6 +154,7 @@ const styles = StyleSheet.create({
     color: '#ff3131',
     textAlign: 'center',
     marginBottom: 20,
+    marginTop:-10,
   },
   input: {
     height: 50,

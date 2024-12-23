@@ -232,7 +232,7 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
               <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
               <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
                 {/* Top Section */}
-                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', padding: 0 }}>
+                <View style={{ flexDirection: 'row', justifyContent: 'flex-start', padding: -40 }}>
                   <View
                     style={{
                       padding: 10,
@@ -344,17 +344,16 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                 </View>
                  
                 <View style={styles.divider}></View>
-                <View style={{ paddingTop: 15, paddingLeft: 20, paddingRight: 20, paddingBottom: 20 }}>
-                  {/* Modification Services Heading */}
-                  <View></View>
-                </View>
+                 
  
                 <View>
                 <Subscription/>
 
                 </View>
+                <View style={styles.divider}></View>
+                <SliderReel/>
                  
-
+                <View style={styles.divider}></View>
               </ScrollView>
             </SafeAreaView>
           )}
@@ -397,13 +396,13 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
 const styles = StyleSheet.create({
 
 
-  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
+  title: { fontSize: 20, fontWeight: 'bold', marginBottom: 5 },
   button: { backgroundColor:  '#ff3131', padding: 10, borderRadius: 5 },
   buttonText: { color: 'black', fontWeight: 'bold' ,alignItems:'center',textAlign:'center',fontSize:15 },
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
-    marginBottom:10,
+    marginBottom:-5,
   },
   scrollView: {
     flex: 1,

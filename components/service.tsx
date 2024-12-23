@@ -70,7 +70,7 @@ const service = () => {
 
   return (
     <SafeAreaView>
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 9 }}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 5 }}>
         <View style={styles.container}>
           {loading ? (
             <ActivityIndicator size="large" color="#0000ff" />
@@ -121,9 +121,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 20,
-    marginRight:10,
+    marginRight:20,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 5,
     color: '#333',
     textAlign: 'center',
     padding:20,
@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     
 
      // Adjust width to fit 2 cards per row with spacing
-        marginBottom: 20, // Spacing between rows
+        marginBottom: 10, // Spacing between rows
         backgroundColor: '#fff',
         borderRadius: 18,
         elevation: 3,

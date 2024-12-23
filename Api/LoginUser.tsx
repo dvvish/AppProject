@@ -125,7 +125,7 @@ const LoginUser = (): React.JSX.Element => {
     <View style={styles.container}>
       <Image
         source={icons.logo}
-        style={{ width: 200, height: 200, alignSelf: 'center' }}
+        style={{ width: 200, height: 200, alignSelf: 'center',marginTop:-130 }}
       />
       <Text style={styles.title}>Login</Text>
       {error && <Text style={styles.error}>{error}</Text>}
@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 16,
+  
     backgroundColor: '#fff',
   },
   title: {
@@ -179,6 +179,7 @@ const styles = StyleSheet.create({
     color: '#ff3131',
     textAlign: 'center',
     marginBottom: 20,
+    alignItems:'center',
   },
   input: {
     height: 50,

@@ -1,36 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
+  SafeAreaView,
+  ScrollView,
   View,
   Text,
-  TouchableOpacity,
+  Animated,
+  TouchableWithoutFeedback,
   StyleSheet,
-  Image,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-const path = '../assets/icons/';
-
-// Function to map service names to local icons
 const localIcons = (serviceName: string) => {
   const icons: { [key: string]: any } = {
-    'service': require('../assets/icons/servicebyslot.png'),
-    'onspot': require('../assets/icons/onspot.png'),
-    'quick_services': require('../assets/icons/quick_services.png'),
-    'detailing': require('../assets/icons/detailing.png'),
-    "wheel": require('../assets/icons/wheel.png'),
-    'wash': require('../assets/icons/wash.png'),
-     'denting': require('../assets/icons/paint.png'),
-    'paint': require('../assets/icons/painting.png'),
-    'denting&painting': require('../assets/icons/denting&painting.png'),
-    // Add more mappings as needed
+    service: require("../assets/icons/servicebyslot.png"),
+    onspot: require("../assets/icons/onspot.png"),
+    quick_services: require("../assets/icons/quick_services.png"),
+    detailing: require("../assets/icons/detailing.png"),
+    wheel: require("../assets/icons/wheel.png"),
+    wash: require("../assets/icons/wash.png"),
+    denting: require("../assets/icons/paint.png"),
+    paint: require("../assets/icons/painting.png"),
+    "denting&painting": require("../assets/icons/denting&painting.png"),
   };
-
-  // Return the corresponding icon or a default fallback icon
-  return icons[serviceName] || require('../assets/icons/s1.png');
-  console.log(`../assets/icons/${serviceName}.png`);
-  // return `../assets/icons/${serviceName}.png`;  
+  return icons[serviceName] || require("../assets/icons/s1.png");
 };
 
 const Servicing: React.FC = () => {
@@ -40,12 +32,11 @@ const Servicing: React.FC = () => {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch('https://mechbuddy.pythonanywhere.com/api/service');
+      const response = await fetch("https://mechbuddy.pythonanywhere.com/api/service");
       const data = await response.json();
       setServices(data);
-      console.log(data);
     } catch (error) {
-      console.error('Error fetching services:', error);
+      console.error("Error fetching services:", error);
     } finally {
       setLoading(false);
     }
@@ -55,9 +46,78 @@ const Servicing: React.FC = () => {
     fetchServices();
   }, []);
 
+  // Icon rotation animation
+  const rotateValue = new Animated.Value(0);
+
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(rotateValue, {
+        toValue: 1,
+        duration: 4000, // Adjust speed for continuous rotation
+        useNativeDriver: true,
+      })
+    ).start();
+  }, []);
+
+  // Interpolated rotation value
+  const rotateInterpolate = rotateValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ["0deg", "360deg"],
+  });
+
   const handleServicePress = (serviceName: string): void => {
-    // Navigate to VendorList and pass the service name as a parameter
-    navigation.navigate('VendorList', { service: serviceName });
+    navigation.navigate("VendorList", { service: serviceName });
+  };
+
+  const ServiceBox = ({ service }: { service: any }) => {
+    const scaleValue = new Animated.Value(1);
+
+    const onPressIn = () => {
+      Animated.spring(scaleValue, {
+        toValue: 1.3,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    const onPressOut = () => {
+      Animated.spring(scaleValue, {
+        toValue: 1,
+        useNativeDriver: true,
+      }).start();
+    };
+
+    return (
+      <TouchableWithoutFeedback
+        onPressIn={onPressIn}
+        onPressOut={onPressOut}
+        onPress={() => service.isActive && handleServicePress(service.name)}
+      >
+        <Animated.View
+          style={[
+            styles.serviceBox,
+            !service.isActive && styles.inactiveService,
+            { transform: [{ scale: scaleValue }] },
+          ]}
+        >
+          <Animated.Image
+            source={localIcons(service.iconname)}
+            style={[
+              styles.icon,
+              { transform: [{ rotate: rotateInterpolate }] },
+              !service.isActive && styles.inactiveIcon,
+            ]}
+          />
+          <Text
+            style={[
+              styles.serviceText,
+              !service.isActive && styles.inactiveText,
+            ]}
+          >
+            {service.name}
+          </Text>
+        </Animated.View>
+      </TouchableWithoutFeedback>
+    );
   };
 
   if (loading) {
@@ -71,41 +131,11 @@ const Servicing: React.FC = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <View>
-          {/* <Text style={styles.heading}>Select a Service</Text> */}
-        </View>
         <View style={styles.gridContainer}>
           {services.map((service, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[
-                styles.serviceBox,
-                !service.isActive && styles.inactiveService, // Apply inactive style
-              ]}
-              onPress={() => service.isActive && handleServicePress(service.name)} // Only when it is active
-            >
-              <Image
-                source={localIcons(service.iconname)} // Always use local icons
-                // source={{ uri: "../assets/icons/" + service.iconname + ".png"}} // Always use local icons
-                // source={localIcons(service.iconname)} // Always use local icons
-                // source={require(`../assets/icons/${service.iconname}.png`)} // Always use local icons
-                style={[
-                  styles.icon,
-                  !service.isActive && styles.inactiveIcon, // Apply inactive icon style
-                ]}
-              />
-              <Text
-                style={[
-                  styles.serviceText,
-                  !service.isActive && styles.inactiveText, // Apply inactive text style
-                ]}
-              >
-                {service.name}
-              </Text>
-            </TouchableOpacity>
+            <ServiceBox key={service.id || index} service={service} />
           ))}
         </View>
-        <View style={styles.divider} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -114,67 +144,58 @@ const Servicing: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: "#F5F5F5",
   },
   scrollContainer: {
-    paddingLeft: 20,
-    paddingRight: 20,
-    paddingBottom: 20,
-  },
-  heading: {
-    paddingTop: 10,
-    fontSize: 20,
-    fontWeight: 'bold',
+    padding: 20,
   },
   gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
     marginTop: 20,
   },
   serviceBox: {
-    width: '30%',
-    height: 120,
-    backgroundColor: '#FFF',
+    width: "30%",
+    height: 140,
+    backgroundColor: "#FFF",
     padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
+    borderRadius: 15,
+    alignItems: "center",
     marginBottom: 20,
-    elevation: 2,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
   },
   inactiveService: {
-    opacity: 0.5, // Reduced opacity for inactive services
+    opacity: 0.5,
   },
   icon: {
     width: 70,
-    height: 65,
+    height: 70,
     marginTop: 5,
   },
   inactiveIcon: {
-    opacity: 0.5, // Reduced opacity for inactive icons
+    opacity: 0.5,
   },
   serviceText: {
-    fontSize: 12,
-    color: '#333',
-    fontWeight: '600',
-    textAlign: 'center',
-    marginBottom: 5,
+    fontSize: 14,
+    color: "#333",
+    fontWeight: "600",
+    textAlign: "center",
+    marginTop: 10,
   },
   inactiveText: {
-    color: '#ccc', // Faded text for inactive services
-  },
-  divider: {
-    height: 1,
-    backgroundColor: '#ddd',
-    marginTop: 15,
+    color: "#ccc",
   },
   loadingText: {
     fontSize: 18,
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: 50,
-    color: '#666',
+    color: "#666",
   },
 });
 

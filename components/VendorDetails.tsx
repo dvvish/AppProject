@@ -88,19 +88,20 @@ const VendorDetails: React.FC = ({ route }: any) => {
           <Image source={logoUrl} style={styles.profileImage} />
         </View>
 
-        <View style={{ marginLeft: -220, marginTop: 24 }}>
+        <View style={{ marginLeft: -220, marginTop: 48 }}>
           <AirbnbRating
             count={5}
             defaultRating={4}
             size={20}
             showRating={false}
             isDisabled
-            selectedColor="black"
+            selectedColor="#ff3131"
           />
         </View>
+        {/* Back Button*/}
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Image
-            source={{ uri: 'https://cdn-icons-png.flaticon.com/128/271/271220.png' }}
+            source={{ uri: 'https://cdn-icons-png.flaticon.com/512/11519/11519951.png ' }}
             style={styles.backIcon}
           />
         </TouchableOpacity>
@@ -110,7 +111,7 @@ const VendorDetails: React.FC = ({ route }: any) => {
       <View style={styles.profileDetails}>
         <Text style={styles.vendorName}>{vendorData.name}</Text>
         <Text style={styles.vendorDescription}>
-          Our efficient processes and quick turnaround ensure your vehicle is back on the road fast.
+          Our efficient processes and quick turn around ensure your vehicle is back on the road fast.
         </Text>
       </View>
 
@@ -139,7 +140,7 @@ const styles = StyleSheet.create({
   headerImage: { width: 400, height: '100%', marginRight: 10, borderRadius: 10 },
   profileImageContainer: {
     position: 'absolute',
-    bottom: -30, // Adjust the position to give more space if necessary
+    bottom: -52, // Adjust the position to give more space if necessary
     left: '50%',
     transform: [{ translateX: -170 }], // Adjust the position if necessary
     width: 100, // Increased width
@@ -153,9 +154,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  backButton: { position: 'absolute', top: 10, left: 10 },
-  backIcon: { width: 24, height: 24 },
-  profileDetails: { alignItems: 'center', marginTop: 20, paddingHorizontal: 20 },
+  backButton: { position: 'absolute', top: 10, left: 10, },
+  backIcon: { width: 30, height: 30 },
+  profileDetails: { alignItems: 'center', marginTop: 30, paddingHorizontal: 20 },
   vendorName: { fontSize: 23, fontWeight: 'bold', marginBottom: 5, marginTop: 50 },
   vendorDescription: { textAlign: 'center', fontSize: 14, color: '#666' },
   specificationsContainer: {

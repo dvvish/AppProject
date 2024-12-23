@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -10,
     left: -10,
-    backgroundColor: '#FFD700',
+    backgroundColor: '#ff3131',
     borderRadius: 10,
     paddingVertical: 5,
     paddingHorizontal: 10,
@@ -141,7 +141,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: 10,
     fontWeight: 'bold',
-    color: '#333',
+    color: 'black',
   },
   vendorImage: {
     width: 80,
