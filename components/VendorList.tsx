@@ -130,8 +130,11 @@ const styles = StyleSheet.create({
   },
   badgeContainer: {
     position: 'absolute',
+    //for left side
+    marginLeft:270,
     top: -10,
     left: -10,
+   // paddingLeft:20,
     backgroundColor: '#ff3131',
     borderRadius: 10,
     paddingVertical: 5,
@@ -183,13 +186,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   icon1: {
-    width: 18,
-    height: 18,
+    width: 17,
+    height: 17,
     marginLeft: 13,
   },
   icon: {
-    width: 18,
-    height: 18,
+    width: 19,
+    height:22,
     marginLeft: 160,
   },
 });

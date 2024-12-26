@@ -3,11 +3,11 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   Modal,
   FlatList,
-  ActivityIndicator,
   Alert,
+  ActivityIndicator,
+  StyleSheet,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
@@ -53,6 +53,7 @@ const InputPage = () => {
       const apiEndpoint = `https://mechbuddy.pythonanywhere.com/api/vehicle/${companyId}/${selectedCategory === 'two' ? 'bike' : 'car'}/all`;
       const response = await fetch(apiEndpoint);
       const data = await response.json();
+
       setModels(data);
       const fuelTypes = Array.from(new Set(data.map((item: any) => item.fuel_name)));
       setFuelTypes(fuelTypes);
@@ -107,17 +108,41 @@ const InputPage = () => {
 
   const renderModalContent = () => {
     let data = [];
+    let isCentered = false;
+
     if (currentField === 'category') {
       data = [
         { id: 'two', name: 'Two Wheeler' },
         { id: 'four', name: 'Four Wheeler' },
       ];
+      if (data.length === 2) {
+        isCentered = true; // Center the items if only two categories
+      }
     } else if (currentField === 'company') {
       data = companies.map((item: any) => ({ id: item.id, name: item.name }));
     } else if (currentField === 'model') {
       data = models.map((item: any) => ({ id: item.id, name: item.name }));
     } else if (currentField === 'fuelType') {
       data = fuelTypes.map((fuel) => ({ id: fuel, name: fuel }));
+      if (data.length === 2) {
+        isCentered = true; // Center the items if only two fuel types
+      }
+    }
+
+    if (isCentered) {
+      return (
+        <View style={styles.centeredModal}>
+          {data.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.centeredItem}
+              onPress={() => handleItemSelect(item)}
+            >
+              <Text style={styles.modalItemText}>{item.name}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      );
     }
 
     return (
@@ -230,8 +255,8 @@ const styles = StyleSheet.create({
   },
   fieldText: { fontSize: 16, color: '#555' },
   submitButton: {
-    marginTop:20,
-    padding:20,
+    marginTop: 20,
+    padding: 20,
     backgroundColor: '#ff3131',
     paddingVertical: 13,
     borderRadius: 28,
@@ -241,6 +266,20 @@ const styles = StyleSheet.create({
   modalContainer: { flex: 1, padding: 10, backgroundColor: '#fff' },
   modalItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#ccc' },
   modalItemText: { fontSize: 16 },
+  centeredModal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+  },
+  centeredItem: {
+    padding: 20,
+    marginBottom: 10,
+    backgroundColor: '#f4f4f4',
+    borderRadius: 10,
+    width: '80%',
+    alignItems: 'center',
+  },
 });
 
 export default InputPage;

@@ -106,7 +106,7 @@ const VendorDetails: React.FC = ({ route }: any) => {
           />
         </TouchableOpacity>
       </View>
-
+<Image style={{width:1,height:1}} source={ require('../assets/icons/contact.png')}></Image>
       {/* Vendor Information */}
       <View style={styles.profileDetails}>
         <Text style={styles.vendorName}>{vendorData.name}</Text>
@@ -135,7 +135,7 @@ const VendorDetails: React.FC = ({ route }: any) => {
 };
 
 const styles = StyleSheet.create({
-  scrollViewContainer: { flexGrow: 1, backgroundColor: '#F9F9F9' },
+  scrollViewContainer: { flexGrow: 1, backgroundColor: '#ffffff' },
   header: { height: 250, position: 'relative' },
   headerImage: { width: 400, height: '100%', marginRight: 10, borderRadius: 10 },
   profileImageContainer: {

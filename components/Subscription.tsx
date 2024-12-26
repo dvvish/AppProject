@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
     paddingInline:20,
   },
   expandedContainer: {
-    backgroundColor: "#ff4040", // Highlight expanded card
+    backgroundColor:"#b3b3b3", // Highlight expanded card
     padding: 35,
   },
   icon: {

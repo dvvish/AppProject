@@ -15,14 +15,13 @@ import {
   Alert,
   Linking,
   PermissionsAndroid,
+  Platform,
 } from 'react-native';
 import { RootStackParamList } from './types';
 import ComingSoon from './components/comingsoon';
 import messaging from '@react-native-firebase/messaging';
-// import VendorDetail from './components/VendorDetail'; // Import VendorDetail
-// import VendorDetails from './components/VendorDetails';
-//import Carousel from 'react-native-snap-carousel';
-import { icons } from './constants';
+ 
+import { icons, images } from './constants';
 import Carousel from './components/Carousel';
 import VendorList from './components/VendorList';
 import SliderReel from './components/Slider';
@@ -31,7 +30,7 @@ import Parts from './components/parts';
 import PartDetails from './components/part details';
 import AvailableVendors from './components/Available Vendors';
 import VendorDetails from './components/VendorDetails';
-//import ProfilePage from './components/ProfilePage';
+ 
 import ProfileP from './components/ProfilePage';
 import IntroScreen from './components/IntroScreen';
 import ProfilePage from './components/ProfilePage';
@@ -56,37 +55,24 @@ import Account from './components/Account';
 import Profile from './components/Profile';
 import Subscription from './components/Subscription';
 import LocationPermissionPage from './components/LocationPermissionPage';
-//import { icons } from './constants';
+ 
 
  
 
 
 const Stack = createNativeStackNavigator();
 
-// Sample data for FlatList
-// const userData = [
-//   {
-//     id: '1',
-//     name: ' Jashwant Singh',
-//     description: 'Best service provider for bikes',
-//     dp: 'https://www.mechbuddy.in/img/about/about.jpg',
-//   },
-//   {
-//     id: '2',
-//     name: ' Shivam ',
-//     description: 'Modification Expert',
-//     dp: 'https://www.mechbuddy.in/img/about/about.jpg',
-//   },
-//   // Add more users as needed
-// ];
-
+ 
 
 // for getting integration of firebase config//
 
 function App(): React.JSX.Element {
   const [isUserDataPresent, setIsUserDataPresent] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(false);
+   const [dataList, setDataList] = useState([]);
 const [policyLink, setPolicyLink] = useState<string | null>(null);
+const [profile, setProfile] = useState<string>('');
+const [category, setCategory] = useState(null);
   // Fetch user data and payment status
   const fetchData = async () => {
     try {
@@ -153,7 +139,16 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
         setLoading(false); // Stop the loading indicator
       }
     };
-    
+    const fetchuser = async () => {
+ try{
+const profile= await AsyncStorage.getItem('Token');
+console.log(profile);
+ }
+ catch(error){
+console.log('error');
+ }
+
+    }
     const requestPermission = async () => {
       if (Platform.OS === 'android') {
         const granted = await PermissionsAndroid.request(
@@ -168,7 +163,7 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
         );
   
         if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-          Alert.alert('Permission Granted', 'You can access location services.');
+         // Alert.alert('Permission Granted', 'You can access location services.');
         } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
           Alert.alert('Permission Denied', 'Location permission was denied.');
         } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
@@ -184,10 +179,39 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
         );
       }
     };
+    const fetchData1 = async () => {
+      try {
+        const data = await AsyncStorage.getItem('vehicleData');
+        if (data) {
+           console.log('Data:', data);
+            
+          const parsedData = JSON.parse(data);
+          const categories = parsedData.map((item: any) => item.category);
+          if (categories.includes("four")) {
+            setCategory("four");
+            console.log('Category "four" exists in the data.');
+          } else if (categories.includes("two")) {
+            setCategory("two");
+            console.log('Category "two" exists in the data.');
+          } else {
+            setCategory(null);
+            console.log("No relevant category exists in the data.");
+          }
+        }
+        
+      } catch (error) {
+        console.error('Error retrieving data', error);
+      }
+    };
   
     useEffect(() => {
       requestPermission();
+      fetchData1();
+      //for fetch user login or not// 
+      fetchuser();
     }, []);
+
+    
   const handlePaymentButton = async (navigation: any) => {
     try {
       const isPaid = await AsyncStorage.getItem('ispaid');
@@ -203,7 +227,8 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
 
   const handleImageClick = async (navigation: any) => {
     try {
-      const token = await AsyncStorage.getItem('authToken'); // Replace 'authToken' with your actual key
+      const token = await AsyncStorage.getItem('authToken'); 
+      // Replace 'authToken' with your actual key
       if (token) {
         console.log('Token:', token);
         // fetchData();
@@ -215,6 +240,20 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
       console.error('Error checking token:', error);
       navigation.navigate('Register');
     }
+  };
+  const handleProfileClick = async (navigation: any) => {
+   const profile= await AsyncStorage.getItem('Token');
+   if(profile){
+    console.log('Token:', profile);
+    navigation.navigate('ProfilePage');
+   }
+   else{
+    console.log('error');
+    navigation.navigate('LoginUser');
+   }
+
+
+
   };
 
   useEffect(() => {
@@ -240,6 +279,7 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                       justifyContent: 'center',
                     }}
                   >
+                     
                     <Image
                       source={require('./assets/icons/logo.png')}
                       style={{
@@ -249,9 +289,9 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                       }}
                     />
                   </View>
-
+{/* To navigate into data of vehicle*/}
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('InputPage')}
+                    onPress={() => navigation.navigate('Data')}
                     style={{
                       position: 'absolute',
                       right: 65,
@@ -259,7 +299,7 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                       padding: 10,
                     }}
                   >
-                    <Image
+                    {/* <Image
                       source={require('./assets/icons/wheel.png')}
                       style={{
                         top: 11,
@@ -277,11 +317,28 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                         height: 13,
                         //tintColor: '#ff3131',
                       }}
-                    />
-                  </TouchableOpacity>
+                    /> */}
+                    {/* We are taking data of the inputpage data  we have to save the and display the data page saved data*/}
+                  
+                  {category === "two" ? (
+          <Image
+          source={require('./assets/icons/dc/bike.png')}
+            style={styles.icon}
+          />
+        ) : category === "four" ? (
+          <Image
+            source={
+             require('./assets/icons/car.png') // Four-wheeler icon
+            }
+            style={styles.icon}
+          />
+        ) : (
+          <Image source={require('./assets/icons/add.png')} style={styles.icon} />
+        )}
+         </TouchableOpacity>
 
                   <TouchableOpacity
-                    onPress={() => navigation.navigate('ProfilePage')}
+                    onPress={() => handleProfileClick(navigation)}
                     style={{
                       position: 'absolute',
                       right: 10,
@@ -311,6 +368,7 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                   </TouchableOpacity>
                 </View>
                 
+                
 {/* this is the button */}
 <View style={styles.container}>
   {/* if both are true than does not show the button  */}
@@ -328,6 +386,9 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                   
                  
 <View style={styles.divider}>
+  {/* <View>
+    <Image style={{height:20,width:20}} source={require('./assets/icons/car.png')}></Image>
+  </View> */}
 
 </View>
                 {/* Buttons Section */}
@@ -338,20 +399,28 @@ const [policyLink, setPolicyLink] = useState<string | null>(null);
                 <View style={styles.divider}>
 
 </View>
-
+{/* <View>
+  if(!Profile){
+<Image source={require('../Mechb/assets/icons/car.png')}></Image>
+  }
+</View> */}
+{/* Modifications */}
                 <View>
                   <Modifications />
                 </View>
                  
                 <View style={styles.divider}></View>
                  
- 
+{/* Subscriptions */}
                 <View>
                 <Subscription/>
 
                 </View>
                 <View style={styles.divider}></View>
                 <SliderReel/>
+                <View style={styles.iconContainer}>
+        
+      </View>
                  
                 <View style={styles.divider}></View>
               </ScrollView>
@@ -422,9 +491,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   icon: {
-    width: 40,
-    height: 40,
-    marginLeft: 15,
+    marginTop:10,
+    width: 30,
+    height: 30,
+    marginLeft: 140,
     tintColor: '#FF3131',
   },
   servicesSection: {

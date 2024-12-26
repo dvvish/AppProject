@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Image, FlatList, Dimensions, StyleSheet, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Animated, FlatList, Dimensions, StyleSheet, Text, TouchableWithoutFeedback, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 
 const { width } = Dimensions.get('window');
@@ -16,21 +16,12 @@ const localIcons = (serviceName: string) => {
     Denting: require('../assets/icons/paint.png'),
     Painting: require('../assets/icons/painting.png'),
     "Denting & Painting": require('../assets/icons/denting&painting.png'),
-    //Add more mappings as needed
-    // 'onspot': require('../assets/icons/onspot.png'),
-    // 'quick_services': require('../assets/icons/quick_services.png'),
-    // 'detailing': require('../assets/icons/detailing.png'),
-    // "wheel": require('../assets/icons/wheel.png'),
-    // 'wash': require('../assets/icons/wash.png'),
-    //  'denting': require('../assets/icons/paint.png'),
-    // 'paint': require('../assets/icons/painting.png'),
-    // 'denting&painting': require('../assets/icons/denting&painting.png'),
   };
 
   return icons[serviceName] || require('../assets/icons/s1.png');
 };
 
-const  Slider: React.FC = () => {
+const Slider: React.FC = () => {
   const [services, setServices] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
@@ -67,13 +58,42 @@ const  Slider: React.FC = () => {
     <View style={styles.container}>
       <FlatList
         data={services}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.card} onPress={handleCardPress}>
-            <Image source={localIcons(item.name)} style={styles.icon} />
-            <Text style={styles.label}>{item.name}</Text>
-            <Text style={styles.description}>{item.description || 'Description not available'}</Text>
-          </TouchableOpacity>
-        )}
+        renderItem={({ item }) => {
+          const translateY = new Animated.Value(0);
+
+          const handlePressIn = () => {
+            Animated.spring(translateY, {
+              toValue: 10,
+              useNativeDriver: true,
+            }).start();
+          };
+
+          const handlePressOut = () => {
+            Animated.spring(translateY, {
+              toValue: 2,
+              useNativeDriver: true,
+            }).start();
+          };
+
+          return (
+            <TouchableWithoutFeedback
+              onPressIn={handlePressIn}
+              onPressOut={handlePressOut}
+              onPress={handleCardPress}
+            >
+              <View style={styles.card}>
+                <Animated.Image
+                  source={localIcons(item.name)}
+                  style={[styles.icon, { transform: [{ translateY }] }]}
+                />
+                <Text style={styles.label}>{item.name}</Text>
+                <Text style={styles.description}>
+                  {item.description || 'Description not available'}
+                </Text>
+              </View>
+            </TouchableWithoutFeedback>
+          );
+        }}
         horizontal
         keyExtractor={(item, index) => index.toString()}
         showsHorizontalScrollIndicator={false}
@@ -84,6 +104,7 @@ const  Slider: React.FC = () => {
 
 const styles = StyleSheet.create({
   container: {
+    paddingTop:10,
     alignItems: 'center',
     backgroundColor: '#fff',
     paddingVertical: 16,
@@ -95,6 +116,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   card: {
+    marginTop:10,
     width: width * 0.3,
     justifyContent: 'center',
     alignItems: 'center',
@@ -106,7 +128,7 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
     elevation: 2,
-    marginBottom: 20,
+    marginBottom: 10,
     marginHorizontal: 5,
     overflow: 'hidden',
   },
@@ -129,4 +151,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default  Slider;
+export default Slider;

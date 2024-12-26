@@ -37,17 +37,7 @@ const ProfilePage = ({ navigation }) => {
         fetchUserData();
     }, []);
     const fetchuser = async () => {
-        try {
-            const data2 = await AsyncStorage.getItem('Token'); // Replace 'userData' with your key
-            if (data2) {
                  navigation.navigate("Profile"); // Parse JSON data if stored as a string
-            }
-            else{
-                navigation.navigate('LoginUser');
-            }
-        } catch (error) {
-            console.error('Error fetching user data:', error);
-        }
     };
 
     const handleHomePress = () => {
