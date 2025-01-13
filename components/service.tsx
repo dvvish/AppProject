@@ -61,10 +61,10 @@ const service = () => {
       if (service.name === 'Parts') {
         navigation.navigate('Parts');
       } else if (service.name === 'Servicing') {
-        navigation.navigate('Servicing');
+        navigation.navigate('Services');
       }
     } else {
-      navigation.navigate('InputPage');
+      navigation.navigate('VehicleForm');
     }
   };
 

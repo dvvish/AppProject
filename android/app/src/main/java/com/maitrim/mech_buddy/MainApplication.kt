@@ -1,6 +1,8 @@
 package com.maitrim.mech_buddy
 
 
+import com.razorpay.rn.RazorpayPackage;
+
 
 import android.app.Application
 import com.facebook.react.PackageList

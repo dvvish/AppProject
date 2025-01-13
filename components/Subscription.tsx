@@ -9,9 +9,11 @@ import {
   StyleSheet,
   ActivityIndicator,
   Animated,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import RazorpayCheckout from "react-native-razorpay";
 
 const subscriptionPlans = [
   {
@@ -62,6 +64,34 @@ const Subscription: React.FC = () => {
 
     checkLoginStatus();
   }, []);
+
+
+  {/* In this section we include Razorpay on that */}
+  const handlePayment = () => {
+    const options = {
+      description: 'Purchase Description',
+      image: 'https://www.mechbuddy.in/logo/official-logo.png',
+      currency: 'INR',
+      key: 'rzp_live_UUM8PRQj8fyJrl',
+      amount:  100, // Amount in paise  
+      name: 'Mech Buddy',
+      prefill: {
+        email: 'sibeyindia@gmail.com',
+        contact: '1234567890',
+        name: 'User',
+      },
+      theme: { color: '#ff3131' },
+    };
+  
+    RazorpayCheckout.open(options)
+      .then((data) => {
+        Alert.alert('Payment Success', `Payment ID: ${data.razorpay_payment_id}`);
+      })
+      .catch((error) => {
+        console.error('Razorpay Error:', error);
+        Alert.alert('Payment Error', `Code: ${error.code}\nDescription: ${error.description}`);
+      });
+  };
 
   const handleSubscribe = async (planId: number) => {
     const data = await AsyncStorage.getItem("vehicleData");
@@ -151,7 +181,7 @@ const Subscription: React.FC = () => {
                   )}
                   <TouchableOpacity
                     style={styles.subscribeButton}
-                    onPress={() => handleSubscribe(item.id)}
+                    onPress={handlePayment}
                   >
                     <Text style={styles.subscribeButtonText}>Book Now</Text>
                   </TouchableOpacity>
@@ -219,7 +249,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   subscribeButton: {
-    backgroundColor: "black",
+    backgroundColor: "#ff3131",
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 20,

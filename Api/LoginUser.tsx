@@ -90,9 +90,9 @@ const LoginUser = (): React.JSX.Element => {
 
       const data = await AsyncStorage.getItem('vehicleData');
       if (data) {
-        navigation.navigate('payment');
+        navigation.navigate('Home');
       } else {
-        navigation.navigate('InputPage');
+        navigation.navigate('VehicleForm');
       }
     } catch (err) {
       console.error('Error during login:', err);

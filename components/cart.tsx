@@ -8,9 +8,12 @@ import {
   SafeAreaView,
   ScrollView,
   Modal,
+  Button,
+  Alert,
 } from 'react-native';
  
 import { images } from "../constants";
+import RazorpayCheckout from 'react-native-razorpay';
 import { useNavigation } from '@react-navigation/native';
 
 const Cart: React.FC = () => {
@@ -20,6 +23,35 @@ const Cart: React.FC = () => {
   const [popupMessage, setPopupMessage] = useState('');
 
   // Sample data for cart items
+
+
+
+  const handlePayment = () => {
+    const options = {
+      description: 'Purchase Description',
+      image: 'https://www.mechbuddy.in/logo/official-logo.png',
+      currency: 'INR',
+      key: 'rzp_test_u4B2USurpc05YA',
+      amount: 1000, // Amount in paise (₹2199.00)
+      name: 'Mech Buddy',
+      prefill: {
+        email: 'sibeyindia@gmail.com',
+        contact: '9999999999',
+        name: 'Test User',
+      },
+      theme: { color: '#ff3131' },
+    };
+  
+    RazorpayCheckout.open(options)
+      .then((data) => {
+        Alert.alert('Payment Success', `Payment ID: ${data.razorpay_payment_id}`);
+      })
+      .catch((error) => {
+        console.error('Razorpay Error:', error);
+        Alert.alert('Payment Error', `Code: ${error.code}\nDescription: ${error.description}`);
+      });
+  };
+    
   const [cartItems, setCartItems] = useState([
     {
       id: '1',
@@ -156,8 +188,8 @@ const Cart: React.FC = () => {
 
         {/* Buy Now Button */}
         {cartItems.length > 0 && (
-         
-            <Text style={styles.buyNowButtonText}>Buy Now</Text>
+         <Button title="Buy Now" onPress={handlePayment} />
+            // <Text style={styles.buyNowButtonText}>Buy Now</Text>
            
         )}
 
@@ -300,7 +332,7 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   buyNowButton: {
-    padding: 16,
+    padding: 46,
     backgroundColor: '#ff3131',
     borderRadius: 8,
     marginTop: 20,

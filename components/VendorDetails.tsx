@@ -12,6 +12,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import Subscription from './Subscription';
 import { AirbnbRating } from 'react-native-ratings';
+import Slider from './Slider';
+import Vendorservices from './Vendorservices';
 
 const VendorDetails: React.FC = ({ route }: any) => {
   const navigation = useNavigation();
@@ -128,6 +130,9 @@ const VendorDetails: React.FC = ({ route }: any) => {
         </Text>
       </View>
 
+      {/* Slider for services in slider  */}
+      {/* <Vendorservices/> */}
+      <Vendorservices/>
       {/* Subscription Section */}
       <Subscription />
     </ScrollView>
@@ -148,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 60, // Keep it circular
     overflow: 'hidden',
     borderWidth: 4,
-    borderColor: '#FFF',
+    borderColor: '#fffff',
   },
   profileImage: {
     width: '100%',
@@ -164,6 +169,7 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#FFF',
     borderRadius: 10,
+
     elevation: 3,
   },
   specificationText: { fontSize: 14, color: '#333', marginBottom: 5 },

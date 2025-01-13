@@ -21,6 +21,32 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ProfilePage = ({ navigation }) => {
     const [userData, setUserData] = useState(null);
+    const [category, setCategory] = useState(null);
+
+    const fetchData1 = async () => {
+        try {
+          const data = await AsyncStorage.getItem('vehicleData');
+          if (data) {
+             console.log('Data:', data);
+              
+            const parsedData = JSON.parse(data);
+            const categories = parsedData.map((item: any) => item.category);
+            if (categories.includes("four")) {
+              setCategory("four");
+              console.log('Category "four" exists in the data.');
+            } else if (categories.includes("two")) {
+              setCategory("two");
+              console.log('Category "two" exists in the data.');
+            } else {
+              setCategory(null);
+              console.log("No relevant category exists in the data.");
+            }
+          }
+          
+        } catch (error) {
+          console.error('Error retrieving data', error);
+        }
+      };
 
     useEffect(() => {
         const fetchUserData = async () => {
@@ -35,6 +61,7 @@ const ProfilePage = ({ navigation }) => {
         };
 
         fetchUserData();
+        fetchData1();
     }, []);
     const fetchuser = async () => {
                  navigation.navigate("Profile"); // Parse JSON data if stored as a string
@@ -127,7 +154,7 @@ const ProfilePage = ({ navigation }) => {
                     </TouchableOpacity>
 
                     {/* Services Section */}
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('Servicing')}>
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('Services')}>
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/11515/11515286.png' }}
                             style={styles.iconImage}
@@ -163,7 +190,7 @@ const ProfilePage = ({ navigation }) => {
                     </TouchableOpacity>
 
                     {/* Notifications Section */}
-                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('ComingSoon')}>
+                    <TouchableOpacity style={styles.section} onPress={() => navigation.navigate('Notification')}>
                         <Image
                             source={{ uri: 'https://cdn-icons-png.flaticon.com/128/3541/3541850.png' }}
                             style={styles.iconImage}

@@ -108,41 +108,18 @@ const InputPage = () => {
 
   const renderModalContent = () => {
     let data = [];
-    let isCentered = false;
 
     if (currentField === 'category') {
       data = [
         { id: 'two', name: 'Two Wheeler' },
         { id: 'four', name: 'Four Wheeler' },
       ];
-      if (data.length === 2) {
-        isCentered = true; // Center the items if only two categories
-      }
     } else if (currentField === 'company') {
       data = companies.map((item: any) => ({ id: item.id, name: item.name }));
     } else if (currentField === 'model') {
       data = models.map((item: any) => ({ id: item.id, name: item.name }));
     } else if (currentField === 'fuelType') {
       data = fuelTypes.map((fuel) => ({ id: fuel, name: fuel }));
-      if (data.length === 2) {
-        isCentered = true; // Center the items if only two fuel types
-      }
-    }
-
-    if (isCentered) {
-      return (
-        <View style={styles.centeredModal}>
-          {data.map((item) => (
-            <TouchableOpacity
-              key={item.id}
-              style={styles.centeredItem}
-              onPress={() => handleItemSelect(item)}
-            >
-              <Text style={styles.modalItemText}>{item.name}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      );
     }
 
     return (
@@ -161,12 +138,36 @@ const InputPage = () => {
     );
   };
 
+  // const handleSubmit = async () => {
+  //   if (!selectedCategory || !selectedCompany || !selectedModel || !selectedFuelType) {
+  //     Alert.alert('Error', 'Please fill all fields.');
+  //     return;
+  //   }
+
+  //   const inputData = {
+  //     category: selectedCategory,
+  //     companyId: selectedCompany.id,
+  //     companyName: selectedCompany.name,
+  //     model: selectedModel,
+  //     fuelType: selectedFuelType,
+  //   };
+
+  //   try {
+  //     const existingData = await AsyncStorage.getItem('vehicleData');
+  //     const parsedData = existingData ? JSON.parse(existingData) : [];
+  //     const updatedData = [...parsedData, inputData];
+  //     await AsyncStorage.setItem('vehicleData', JSON.stringify(updatedData));
+  //     navigation.navigate('Data', { inputData });
+  //   } catch (error) {
+  //     console.error('Error saving data', error);
+  //   }
+  // };
   const handleSubmit = async () => {
     if (!selectedCategory || !selectedCompany || !selectedModel || !selectedFuelType) {
-      Alert.alert('Error', 'Please fill all fields.');
+      Alert.alert("Error", "Please fill all fields.");
       return;
     }
-
+  
     const inputData = {
       category: selectedCategory,
       companyId: selectedCompany.id,
@@ -174,18 +175,22 @@ const InputPage = () => {
       model: selectedModel,
       fuelType: selectedFuelType,
     };
-
+  
     try {
-      const existingData = await AsyncStorage.getItem('vehicleData');
+      const existingData = await AsyncStorage.getItem("vehicleData");
       const parsedData = existingData ? JSON.parse(existingData) : [];
       const updatedData = [...parsedData, inputData];
-      await AsyncStorage.setItem('vehicleData', JSON.stringify(updatedData));
-      navigation.navigate('Data', { inputData });
+      await AsyncStorage.setItem("vehicleData", JSON.stringify(updatedData));
+      Alert.alert("Success", "Vehicle data saved successfully!");
+  
+      // Navigate to Data page after data is saved
+      navigation.navigate("Data");
     } catch (error) {
-      console.error('Error saving data', error);
+      console.error("Error saving data:", error);
+      Alert.alert("Error", "Failed to save vehicle data.");
     }
   };
-
+  
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Vehicle Details</Text>
@@ -229,18 +234,31 @@ const InputPage = () => {
       <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
         <Text style={styles.submitButtonText}>Submit</Text>
       </TouchableOpacity>
-      <Modal visible={modalVisible} animationType="slide" onRequestClose={handleModalClose}>
-        <View style={styles.modalContainer}>
-          {loading ? (
-            <ActivityIndicator size="large" color="#007bff" />
-          ) : (
-            renderModalContent()
-          )}
+      <Modal
+        visible={modalVisible}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleModalClose}
+      >
+        <View style={styles.modalBackdrop}>
+          <View style={styles.modalContent}>
+            {loading ? (
+              <ActivityIndicator size="large" color="#007bff" />
+            ) : (
+              renderModalContent()
+            )}
+            <TouchableOpacity style={styles.closeButton} onPress={handleModalClose}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </Modal>
     </View>
   );
 };
+
+ 
+ 
 
 const styles = StyleSheet.create({
   container: { flex: 1, padding: 20, backgroundColor: '#f4f4f4' },
@@ -263,22 +281,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   submitButtonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
-  modalContainer: { flex: 1, padding: 10, backgroundColor: '#fff' },
-  modalItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#ccc' },
-  modalItemText: { fontSize: 16 },
-  centeredModal: {
+  modalBackdrop: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  centeredItem: {
-    padding: 20,
-    marginBottom: 10,
-    backgroundColor: '#f4f4f4',
-    borderRadius: 10,
+  modalContent: {
     width: '80%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  modalItem: { padding: 15, borderBottomWidth: 1, borderBottomColor: '#ccc' },
+  modalItemText: { fontSize: 16 },
+  closeButton: {
+    marginTop: 15,
+    backgroundColor: '#ff3131',
+    padding: 10,
+    borderRadius: 5,
     alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

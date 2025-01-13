@@ -19,7 +19,7 @@ import {
 } from 'react-native';
 import { RootStackParamList } from './types';
 import ComingSoon from './components/comingsoon';
-import messaging from '@react-native-firebase/messaging';
+ 
  
 import { icons, images } from './constants';
 import Carousel from './components/Carousel';
@@ -30,7 +30,7 @@ import Parts from './components/parts';
 import PartDetails from './components/part details';
 import AvailableVendors from './components/Available Vendors';
 import VendorDetails from './components/VendorDetails';
- 
+import messaging from '@react-native-firebase/messaging';
 import ProfileP from './components/ProfilePage';
 import IntroScreen from './components/IntroScreen';
 import ProfilePage from './components/ProfilePage';
@@ -55,6 +55,8 @@ import Account from './components/Account';
 import Profile from './components/Profile';
 import Subscription from './components/Subscription';
 import LocationPermissionPage from './components/LocationPermissionPage';
+import NotificationPage from './components/NotificationPage';
+import Servicedescription from './components/Servicedescription';
  
 
  
@@ -69,169 +71,109 @@ const Stack = createNativeStackNavigator();
 function App(): React.JSX.Element {
   const [isUserDataPresent, setIsUserDataPresent] = useState(false);
   const [paymentStatus, setPaymentStatus] = useState(false);
-   const [dataList, setDataList] = useState([]);
-const [policyLink, setPolicyLink] = useState<string | null>(null);
-const [profile, setProfile] = useState<string>('');
-const [category, setCategory] = useState(null);
-  // Fetch user data and payment status
-  const fetchData = async () => {
-    try {
-      const userData = await AsyncStorage.getItem('userData');
-      if (userData) {
-        console.log('User Data:', userData);
-       // setIsUserDataPresent(true);
-        console.log(isUserDataPresent);
-      }
-    }
-      catch{
-        console.log('no data');
-      }
-    };
-    const payment = async () => {
-      try {
-        // Fetch payment status from API
-        const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
-        const result = await response.json();
-    
-        if (result.others && typeof result.others.payment !== 'undefined') {
-          setPaymentStatus(result.others.payment);
-          console.log(paymentStatus); // Update payment status with the value of "payment"
-        } else {
-          console.warn('No payment status found in the API.');
-        }
-      } catch (error) {
-        console.error('Error fetching payment status:', error);
-      } finally {
-        setLoading(false); // Stop the loading indicator
-      }
-    };
-    useEffect(() => {
-        const fetchPolicyLink = async () => {
-          try {
-            const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
-            const result = await response.json();
-            if (result.others?.policy) {
-              setPolicyLink(result.others.policy);
-            }
-          } catch (error) {
-            console.error('Error fetching policy link:', error);
-          }
-        };
-    
-        fetchPolicyLink();
-      }, []);
-
-    const register = async () => {
-      try {
-        // Fetch payment status from API
-        const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
-        const result = await response.json();
-    
-        if (result.others && typeof result.others.register !== 'undefined') {
-          setIsUserDataPresent(result.others.register);
-          console.log(isUserDataPresent); // Update payment status with the value of "payment"
-        } else {
-          console.warn('No payment status found in the API.');
-        }
-      } catch (error) {
-        console.error('Error fetching payment status:', error);
-      } finally {
-        setLoading(false); // Stop the loading indicator
-      }
-    };
-    const fetchuser = async () => {
- try{
-const profile= await AsyncStorage.getItem('Token');
-console.log(profile);
- }
- catch(error){
-console.log('error');
- }
-
-    }
-    const requestPermission = async () => {
-      if (Platform.OS === 'android') {
-        const granted = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-          {
-            title: 'Location Access Permission',
-            message: 'This app needs access to your location to function properly.',
-            buttonNeutral: 'Ask Me Later',
-            buttonNegative: 'Cancel',
-            buttonPositive: 'OK',
-          }
-        );
+  const [dataList, setDataList] = useState<any[]>([]);
+  const [policyLink, setPolicyLink] = useState<string | null>(null);
+  const [category, setCategory] = useState<string | null>(null);
+ 
   
-        if (granted === PermissionsAndroid.RESULTS.GRANTED) {
-         // Alert.alert('Permission Granted', 'You can access location services.');
-        } else if (granted === PermissionsAndroid.RESULTS.DENIED) {
-          Alert.alert('Permission Denied', 'Location permission was denied.');
-        } else if (granted === PermissionsAndroid.RESULTS.NEVER_ASK_AGAIN) {
-          Alert.alert(
-            'Permission Blocked',
-            'You chose "Never Ask Again." Enable permissions manually in settings.'
-          );
+  const  fetchData1 = async () => {
+    try {
+      const data = await AsyncStorage.getItem('vehicleData');
+      console.log('Raw Data from AsyncStorage:', data);
+  
+      if (data) {
+        const parsedData = JSON.parse(data);
+        console.log('Parsed Data:', parsedData);
+  
+        if (Array.isArray(parsedData) && parsedData.length > 0) {
+          // Get the most recent vehicle (assuming the last item in the array is the most recent one)
+          const mostRecentVehicle = parsedData[parsedData.length - 1];
+          
+          // Set the category of the most recent vehicle
+          setCategory(mostRecentVehicle.category);
+  
+          console.log('Most Recent Vehicle Category:', mostRecentVehicle.category);
+  
+          // Optionally, you can remove the previous data from AsyncStorage if needed:
+          // You can save the most recent data to AsyncStorage again if you want to keep it updated
+          // await AsyncStorage.setItem('vehicleData', JSON.stringify([mostRecentVehicle]));
+          
+          // If you only want to update AsyncStorage with the latest category:
+          await AsyncStorage.setItem('vehicleCategory', mostRecentVehicle.category);
+          
+          console.log('Saved Latest Category to AsyncStorage:', mostRecentVehicle.category);
+        } else {
+          console.log('No vehicles found in the data.');
+          setCategory(null);  // No category found
         }
       } else {
-        Alert.alert(
-          'iOS Permission',
-          'iOS will automatically handle location permissions when needed.'
-        );
-      }
-    };
-    const fetchData1 = async () => {
-      try {
-        const data = await AsyncStorage.getItem('vehicleData');
-        if (data) {
-           console.log('Data:', data);
-            
-          const parsedData = JSON.parse(data);
-          const categories = parsedData.map((item: any) => item.category);
-          if (categories.includes("four")) {
-            setCategory("four");
-            console.log('Category "four" exists in the data.');
-          } else if (categories.includes("two")) {
-            setCategory("two");
-            console.log('Category "two" exists in the data.');
-          } else {
-            setCategory(null);
-            console.log("No relevant category exists in the data.");
-          }
-        }
-        
-      } catch (error) {
-        console.error('Error retrieving data', error);
-      }
-    };
-  
-    useEffect(() => {
-      requestPermission();
-      fetchData1();
-      //for fetch user login or not// 
-      fetchuser();
-    }, []);
-
-    
-  const handlePaymentButton = async (navigation: any) => {
-    try {
-      const isPaid = await AsyncStorage.getItem('ispaid');
-      if (isPaid === 'true') {
-        Alert.alert('Payment Status', 'Payment already completed.');
-      } else {
-        navigation.navigate('pay');
+        console.log('No vehicle data found in AsyncStorage.');
+        setCategory(null);  // No category found
       }
     } catch (error) {
-      console.error('Error fetching payment status:', error);
+      console.error('Error fetching or processing data from AsyncStorage:', error);
+    }
+  };
+  
+  useEffect(() => {
+     fetchData1();
+  }, []);
+  
+  
+  const requestUserPermission = async () => {
+    try {
+      const authStatus = await messaging().requestPermission();
+      if (
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL
+      ) {
+        const token = await messaging().getToken();
+        if (token) {
+          await AsyncStorage.setItem('FCMToken', token);
+        }
+      }
+    } catch (error) {
+      console.error('Error requesting push notification permissions:', error);
+    }
+  };
+
+  const fetchPolicyLink = async () => {
+    try {
+      const response = await fetch('https://mechbuddy.pythonanywhere.com/api/home');
+      const result = await response.json();
+      if (result.others?.policy) {
+        setPolicyLink(result.others.policy);
+      }
+    } catch (error) {
+      console.error('Error fetching policy link:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchData1();
+    requestUserPermission();
+    fetchPolicyLink();
+  }, []);
+
+  
+  
+  const handleProfileClick = async (navigation: any) => {
+    try {
+      const profile = await AsyncStorage.getItem('Token');
+      if (profile) {
+        navigation.navigate('ProfilePage');
+      } else {
+        navigation.navigate('LoginUser');
+      }
+    } catch (error) {
+      console.error('Error fetching profile:', error);
     }
   };
 
   const handleImageClick = async (navigation: any) => {
     try {
-      const token = await AsyncStorage.getItem('authToken'); 
-      // Replace 'authToken' with your actual key
+      const token = await AsyncStorage.getItem('authToken');
       if (token) {
-        console.log('Token:', token);
-        // fetchData();
         navigation.navigate('pay');
       } else {
         navigation.navigate('Register');
@@ -241,26 +183,6 @@ console.log('error');
       navigation.navigate('Register');
     }
   };
-  const handleProfileClick = async (navigation: any) => {
-   const profile= await AsyncStorage.getItem('Token');
-   if(profile){
-    console.log('Token:', profile);
-    navigation.navigate('ProfilePage');
-   }
-   else{
-    console.log('error');
-    navigation.navigate('LoginUser');
-   }
-
-
-
-  };
-
-  useEffect(() => {
-    // fetchData();
-    payment();
-    register();
-  }, []);
 
   return (
     <NavigationContainer>
@@ -270,159 +192,63 @@ console.log('error');
             <SafeAreaView style={styles.container}>
               <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
               <ScrollView contentInsetAdjustmentBehavior="automatic" style={styles.scrollView}>
-                {/* Top Section */}
                 <View style={{ flexDirection: 'row', justifyContent: 'flex-start', padding: -40 }}>
-                  <View
-                    style={{
-                      padding: 10,
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                     
+                  <View style={{ padding: 10, alignItems: 'center', justifyContent: 'center' }}>
                     <Image
                       source={require('./assets/icons/logo.png')}
-                      style={{
-                        width: 60,
-                        height: 60,
-                        resizeMode: 'contain',
-                      }}
+                      style={{ width: 60, height: 60, resizeMode: 'contain' }}
                     />
                   </View>
-{/* To navigate into data of vehicle*/}
                   <TouchableOpacity
                     onPress={() => navigation.navigate('Data')}
-                    style={{
-                      position: 'absolute',
-                      right: 65,
-                      zIndex: 100,
-                      padding: 10,
-                    }}
+                    style={{ position: 'absolute', right: 65, zIndex: 100, padding: 10 }}
                   >
-                    {/* <Image
-                      source={require('./assets/icons/wheel.png')}
-                      style={{
-                        top: 11,
-                        width: 30,
-                        height: 30,
-                        //tintColor: '#ff3131',
-                      }}
-                    />
-                    <Image
-                      source={ {uri:'https://cdn-icons-png.flaticon.com/512/32/32563.png'}}
-                      style={{
-                        top: -25,
-                        width: 13,
-                        marginLeft:22,
-                        height: 13,
-                        //tintColor: '#ff3131',
-                      }}
-                    /> */}
-                    {/* We are taking data of the inputpage data  we have to save the and display the data page saved data*/}
-                  
-                  {category === "two" ? (
-          <Image
-          source={require('./assets/icons/dc/bike.png')}
-            style={styles.icon}
-          />
-        ) : category === "four" ? (
-          <Image
-            source={
-             require('./assets/icons/car.png') // Four-wheeler icon
-            }
-            style={styles.icon}
-          />
-        ) : (
-          <Image source={require('./assets/icons/add.png')} style={styles.icon} />
-        )}
-         </TouchableOpacity>
-
+                    {category === 'two' ? (
+                      <Image source={require('./assets/icons/dc/bike.png')} style={styles.icon} />
+                    ) : category === 'four' ? (
+                      <Image source={require('./assets/icons/car.png')} style={styles.icon} />
+                    ) : (
+                      <Image source={require('./assets/icons/add.png')} style={styles.icon} />
+                    )}
+                  </TouchableOpacity>
                   <TouchableOpacity
                     onPress={() => handleProfileClick(navigation)}
-                    style={{
-                      position: 'absolute',
-                      right: 10,
-                      zIndex: 100,
-                      padding: 10,
-                    }}
+                    style={{ position: 'absolute', right: 10, zIndex: 100, padding: 10 }}
                   >
                     <Image
                       source={require('./assets/icons/profile.png')}
-                      style={{
-                        top: 11,
-                        width: 30,
-                        height: 30,
-                        tintColor: '#ff3131',
-                      }}
+                      style={{ top: 11, width: 30, height: 30, tintColor: '#ff3131' }}
                     />
                   </TouchableOpacity>
                 </View>
                 <View style={{ padding: 20 }}>
                   <Carousel />
                 </View>
-
-                {/* ImageComponent Section */}
                 <View>
                   <TouchableOpacity onPress={() => handleImageClick(navigation)}>
                     <ImageComponent />
                   </TouchableOpacity>
                 </View>
-                
-                
-{/* this is the button */}
-<View style={styles.container}>
-  {/* if both are true than does not show the button  */}
-                  {/* Button appears if user data is present and payment is false */}
-                   
-                   {/* For */}
+                <View style={styles.container}>
+                  {policyLink && (
                     <TouchableOpacity
                       style={styles.button}
-                      onPress={() => policyLink && Linking.openURL(policyLink)}
+                      onPress={() => Linking.openURL(policyLink)}
                     >
-                      <Text style={styles.buttonText}>Click here to view the rules </Text>
+                      <Text style={styles.buttonText}>Click here to view the rules</Text>
                     </TouchableOpacity>
-                
+                  )}
                 </View>
-                  
-                 
-<View style={styles.divider}>
-  {/* <View>
-    <Image style={{height:20,width:20}} source={require('./assets/icons/car.png')}></Image>
-  </View> */}
-
-</View>
-                {/* Buttons Section */}
                 <View>
                   <Service />
                 </View>
-
-                <View style={styles.divider}>
-
-</View>
-{/* <View>
-  if(!Profile){
-<Image source={require('../Mechb/assets/icons/car.png')}></Image>
-  }
-</View> */}
-{/* Modifications */}
                 <View>
                   <Modifications />
                 </View>
-                 
-                <View style={styles.divider}></View>
-                 
-{/* Subscriptions */}
                 <View>
-                <Subscription/>
-
+                  <Subscription />
                 </View>
-                <View style={styles.divider}></View>
-                <SliderReel/>
-                <View style={styles.iconContainer}>
-        
-      </View>
-                 
-                <View style={styles.divider}></View>
+                <SliderReel />
               </ScrollView>
             </SafeAreaView>
           )}
@@ -430,8 +256,10 @@ console.log('error');
         <Stack.Screen name="ComingSoon" component={ComingSoon} />
         {/* <Stack.Screen name="VendorDetail" component={VendorDetail} />
         <Stack.Screen name='VendorDetails' component={VendorDetails}/> */}
+        
+        <Stack.Screen name='Servicedescription' component={Servicedescription}></Stack.Screen>
         <Stack.Screen name='VendorList' component={VendorList} />
-        <Stack.Screen name='Servicing' component={Servicing} options={{ headerShown: true }} />
+        <Stack.Screen name='Services' component={Servicing} options={{ headerShown: true }} />
         <Stack.Screen name='Parts' component={Parts} options={{ headerShown: true }} />
         <Stack.Screen name='PartDetails' component={PartDetails} />
         <Stack.Screen name='AvailableVendors' component={AvailableVendors} />
@@ -444,14 +272,15 @@ console.log('error');
         {/* <Stack.Screen name="InputData"  component={DisplayData} /> */}
    {/* <Stack.Screen name="Register" component={Registercomp} options={{headerShown:false}}/> */}
         <Stack.Screen name="LoginUser" component={LoginUser} />
-          <Stack.Screen name="InputPage" component={InputPage}/> 
+          <Stack.Screen name="VehicleForm" component={InputPage}/> 
         <Stack.Screen name="VendorDetails1" component={VendorDetails1} />
-          <Stack.Screen name = "Data" component={Data}/>
+          <Stack.Screen name = "Data" component={Data} options={{headerShown:false}}/>
     <Stack.Screen name= "payment" component={Payment} options={{headerShown:false}}/>
         <Stack.Screen name="pay" component={Pay} />
         <Stack.Screen name="Register" component={Registercomp} options={{ headerShown: false }} />
         {/* Add other screens here */}
         <Stack.Screen name ="Contact" component={ContactPage}/>
+        <Stack.Screen name ="Notification" component={NotificationPage}/>
         <Stack.Screen name ="Profile" component={ Profile} options={{headerShown :false}}/>
         <Stack.Screen name ="Location" component={ LocationPermissionPage} options={{headerShown :false}}/>
       </Stack.Navigator>
@@ -463,8 +292,6 @@ console.log('error');
 
 
 const styles = StyleSheet.create({
-
-
   title: { fontSize: 20, fontWeight: 'bold', marginBottom: 5 },
   button: { backgroundColor:  '#ff3131', padding: 10, borderRadius: 5 },
   buttonText: { color: 'black', fontWeight: 'bold' ,alignItems:'center',textAlign:'center',fontSize:15 },
