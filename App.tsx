@@ -161,7 +161,7 @@ function App(): React.JSX.Element {
     try {
       const profile = await AsyncStorage.getItem('Token');
       if (profile) {
-        navigation.navigate('ProfilePage');
+        navigation.navigate('LoginUser');
       } else {
         navigation.navigate('LoginUser');
       }

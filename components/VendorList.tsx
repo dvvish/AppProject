@@ -7,9 +7,12 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  Linking,
 } from 'react-native';
 import { icons } from '../constants';
 import StarRating, { StarRatingDisplay } from 'react-native-star-rating-widget';
+ 
+ 
 
 const VendorList: React.FC<VendorListProps> = ({ navigation }) => {
   const [vendors, setVendors] = useState([]);
@@ -36,6 +39,14 @@ const VendorList: React.FC<VendorListProps> = ({ navigation }) => {
 
   const handlePress = (id: string): void => {
     navigation.navigate('VendorDetails', { vendorId: id });
+  };
+
+  const openGoogleMaps = ( ) => {
+    const latitude = 22.690342992296085;
+  const longitude =  75.82834140674557;
+   
+    const url = `https://www.google.com/maps/search/?api=1&query=${latitude},${longitude}`;
+    Linking.openURL(url).catch((err) => console.error('Failed to open Google Maps:', err));
   };
 
   if (loading) {
@@ -81,7 +92,8 @@ const VendorList: React.FC<VendorListProps> = ({ navigation }) => {
                   ))}
                 </View>
                 <View style={styles.iconRow}>
-                  <TouchableOpacity>
+                  {/* Open Google Maps on Point Icon Press */}
+                  <TouchableOpacity onPress={() => openGoogleMaps( )}>
                     <Image source={require('../assets/icons/point.png')} style={styles.icon} />
                   </TouchableOpacity>
                   <TouchableOpacity>

@@ -11,10 +11,11 @@ import {
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useNavigation } from '@react-navigation/native';
- 
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import auth from '@react-native-firebase/auth';
+
 import { icons } from '../constants'; // Replace with your icons file
 
- 
 const LoginUser = (): React.JSX.Element => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -22,9 +23,12 @@ const LoginUser = (): React.JSX.Element => {
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
 
-  // Refs to store timeout IDs for debouncing
-  const usernameTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const passwordTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // Configure Google Sign-In
+  React.useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: 'AIzaSyBtEX7UYVIq0agwxM3L1RoiQCGole7wasc', // Replace with your Web Client ID
+    });
+  }, []);
 
   const saveToken = async (token: string) => {
     try {
@@ -32,15 +36,6 @@ const LoginUser = (): React.JSX.Element => {
       console.log('Token saved successfully');
     } catch (error) {
       console.error('Failed to save token:', error);
-    }
-  };
-
-  const saveProfile = async (profile: any) => {
-    try {
-      await AsyncStorage.setItem('Profile', JSON.stringify(profile));
-      console.log('Profile saved successfully');
-    } catch (error) {
-      console.error('Failed to save profile:', error);
     }
   };
 
@@ -72,7 +67,6 @@ const LoginUser = (): React.JSX.Element => {
         throw new Error(errorData.message || 'Invalid username or password.');
       }
 
-      // Parse response JSON safely
       const responseData = await response.json();
       console.log('Login Response:', responseData);
 
@@ -82,10 +76,7 @@ const LoginUser = (): React.JSX.Element => {
         throw new Error('Token or profile not received from the server.');
       }
 
-      // Save the token and profile to AsyncStorage
       await saveToken(token);
-      await saveProfile(profile);
-
       Alert.alert('Success', 'Login successful!');
 
       const data = await AsyncStorage.getItem('vehicleData');
@@ -102,52 +93,82 @@ const LoginUser = (): React.JSX.Element => {
     }
   };
 
-  // Debounced input handlers
-  const handleUsernameChange = (value: string) => {
-    if (usernameTimeoutRef.current) {
-      clearTimeout(usernameTimeoutRef.current); // Clear previous timeout
-    }
-    usernameTimeoutRef.current = setTimeout(() => {
-      setUsername(value); // Update state after debounce delay
-    }, 300);
-  };
+  const handleGoogleSignIn = async () => {
+    try {
+      // Check Google Play Services
+      await GoogleSignin.hasPlayServices();
 
-  const handlePasswordChange = (value: string) => {
-    if (passwordTimeoutRef.current) {
-      clearTimeout(passwordTimeoutRef.current); // Clear previous timeout
+      // Get Google User Info
+      const { idToken } = await GoogleSignin.signIn();
+
+      if (!idToken) {
+        throw new Error('Google Sign-In failed. No ID Token received.');
+      }
+
+      // Sign In to Firebase with Google Credential
+      const googleCredential = auth.GoogleAuthProvider.credential(idToken);
+      const firebaseUser = await auth().signInWithCredential(googleCredential);
+
+      console.log('Firebase User:', firebaseUser);
+
+      const token = firebaseUser.user.uid;
+      const profile = {
+        email: firebaseUser.user.email,
+        displayName: firebaseUser.user.displayName,
+        photoURL: firebaseUser.user.photoURL,
+      };
+
+      await saveToken(token);
+      await AsyncStorage.setItem('Profile', JSON.stringify(profile));
+
+      Alert.alert('Success', 'Google Sign-In successful!');
+      navigation.navigate('Home');
+    } catch (error) {
+      if (error.code === statusCodes.SIGN_IN_CANCELLED) {
+        Alert.alert('Cancelled', 'Google Sign-In was cancelled.');
+      } else if (error.code === statusCodes.IN_PROGRESS) {
+        Alert.alert('In Progress', 'Google Sign-In is in progress.');
+      } else if (error.code === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+        Alert.alert('Error', 'Google Play Services not available.');
+      } else {
+        console.error('Google Sign-In Error:', error);
+        Alert.alert('Error', 'Failed to sign in with Google.');
+      }
     }
-    passwordTimeoutRef.current = setTimeout(() => {
-      setPassword(value); // Update state after debounce delay
-    }, 300);
   };
 
   return (
     <View style={styles.container}>
       <Image
         source={icons.logo}
-        style={{ width: 200, height: 200, alignSelf: 'center',marginTop:-130 }}
+        style={{ width: 200, height: 200, alignSelf: 'center', marginTop: -130 }}
       />
       <Text style={styles.title}>Login</Text>
       {error && <Text style={styles.error}>{error}</Text>}
       <TextInput
         style={styles.input}
         placeholder="Username"
-        onChangeText={handleUsernameChange}
+        onChangeText={setUsername}
         placeholderTextColor="#999"
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
         secureTextEntry
-        onChangeText={handlePasswordChange}
+        onChangeText={setPassword}
         placeholderTextColor="#999"
       />
       {loading ? (
         <ActivityIndicator size="large" color="#ff3131" />
       ) : (
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity style={styles.button} onPress={handleLogin}>
+            <Text style={styles.buttonText}>Login</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.googleButton} onPress={handleGoogleSignIn}>
+            <Text style={styles.googleButtonText}>Sign in with Google</Text>
+          </TouchableOpacity>
+        </>
       )}
       <Text style={styles.registerText}>
         New user?{' '}
@@ -162,16 +183,12 @@ const LoginUser = (): React.JSX.Element => {
   );
 };
 
- 
-
-
 export default LoginUser;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-  
     backgroundColor: '#fff',
   },
   title: {
@@ -179,7 +196,6 @@ const styles = StyleSheet.create({
     color: '#ff3131',
     textAlign: 'center',
     marginBottom: 20,
-    alignItems:'center',
   },
   input: {
     height: 50,
@@ -205,7 +221,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
+  googleButton: {
+    backgroundColor: '#4285F4',
+    paddingVertical: 15,
+    borderRadius: 25,
+    marginHorizontal: 50,
+    alignItems: 'center',
+    marginTop: 10,
+  },
   buttonText: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  googleButtonText: {
     color: '#fff',
     fontSize: 18,
   },
@@ -221,7 +249,3 @@ const styles = StyleSheet.create({
     textDecorationLine: 'underline',
   },
 });
-// function debounce(arg0: (value: string) => void, arg1: number): any {
-//   throw new Error('Function not implemented.');
-// }
-

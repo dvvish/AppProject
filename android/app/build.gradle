@@ -2,14 +2,8 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 apply plugin: 'com.android.application'
-
-//THIS LINE IS COMMENTED OUT TILL
-//for location //
-//  apply plugin: 'com.google.gms.google-services'
-/**
- * This is the configuration block to customize your React Native Android app.
- * By default you don't need to apply any configuration, just uncomment the lines you need.
- */
+ 
+apply plugin: 'com.google.gms.google-services' // <- Add this line
 react {
     /* Folders */
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
@@ -86,8 +80,9 @@ android {
         applicationId "com.maitrim.mech_buddy"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 55
+        versionCode 57
         versionName "1.0.0"
+         manifestPlaceholders = [appAuthRedirectScheme: "com. maitrim.mech_buddy"]
     }
     signingConfigs {
         debug {

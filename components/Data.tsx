@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, Text, FlatList, TouchableOpacity, Alert, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
@@ -103,8 +103,16 @@ const Data = () => {
           keyExtractor={(item, index) => index.toString()}
           renderItem={({ item }) => (
             <View style={styles.item}>
+
               <TouchableOpacity onPress={() => handleItemPress(item)}>
-                <View style={styles.itemDetails}>
+ 
+ 
+              <TouchableOpacity
+                style={styles.deleteButton}
+                onPress={() => handleDelete(item)}
+              >
+                <Image source={require('../assets/icons/close.png')} style={{ width: 20, height: 20, }} />
+              </TouchableOpacity>               <View style={styles.itemDetails}>
                   <Text style={styles.itemText}>Category: {item.category}</Text>
                   <Text style={styles.itemText}>Company: {item.companyName}</Text>
                   <Text style={styles.itemText}>Model: {item.model}</Text>
@@ -113,12 +121,7 @@ const Data = () => {
               </TouchableOpacity>
 
               {/* Delete Button */}
-              <TouchableOpacity
-                style={styles.deleteButton}
-                onPress={() => handleDelete(item)}
-              >
-                <Text style={styles.deleteButtonText}>Delete</Text>
-              </TouchableOpacity>
+               
             </View>
           )}
         />
@@ -166,11 +169,16 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   deleteButton: {
-    padding: 10,
-    backgroundColor: '#f44336',
+    
+    width:30,
+    height:30,
+    flex:1,
+      marginRight:'auto',
+      marginLeft:280,
+    // backgroundColor: '#f44336',
     borderRadius: 5,
     alignItems: 'center',
-    marginTop: 10,
+    
   },
   deleteButtonText: {
     color: '#fff',
